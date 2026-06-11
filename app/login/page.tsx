@@ -8,6 +8,13 @@ import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 
+function getDashboardByRole(role: string) {
+  if (role === 'manager') return '/manager-dashboard';
+  if (role === 'worker') return '/worker-dashboard';
+  if (role === 'customer') return '/customer-dashboard';
+  return '/dashboard';
+}
+
 export default function LoginPage() {
   const { signIn, user } = useAuth();
   const router = useRouter();
@@ -22,8 +29,8 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     try {
-      await signIn(email, password);
-      router.push('/dashboard');
+      const pu = await signIn(email, password);
+      router.push(getDashboardByRole(pu?.role ?? 'admin'));
     } catch {
       toast.error('Invalid email or password');
     } finally {

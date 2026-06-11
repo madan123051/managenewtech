@@ -4,9 +4,17 @@ import { usePathname } from 'next/navigation';
 import { LayoutDashboard, Users, UserCheck, Briefcase, FileText, Hammer, LogOut, UserCog, Building2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
+function getDashboardHref(role: string) {
+  if (role === 'manager') return '/manager-dashboard';
+  if (role === 'worker') return '/worker-dashboard';
+  if (role === 'customer') return '/customer-dashboard';
+  return '/dashboard';
+}
+
 const navItems = (role: string) => {
+  const dashHref = getDashboardHref(role);
   const all = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, roles: ['admin','manager','worker','customer'] },
+    { href: dashHref, label: 'Dashboard', icon: LayoutDashboard, roles: ['admin','manager','worker','customer'] },
     { href: '/customers', label: 'Customers', icon: Users, roles: ['admin','manager'] },
     { href: '/leads', label: 'Leads', icon: UserCheck, roles: ['admin','manager'] },
     { href: '/quotations', label: 'Quotations', icon: FileText, roles: ['admin','manager','customer'] },
@@ -46,7 +54,11 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="px-4 py-4 border-t border-white/10">
+      <div className="px-3 py-4 border-t border-white/10">
+        <div className="px-3 py-2 mb-2">
+          <p className="text-xs text-blue-200 truncate">{portalUser.name}</p>
+          <p className="text-xs text-blue-300 capitalize">{portalUser.role}</p>
+        </div>
         <button onClick={signOut} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-300 hover:bg-red-500/20">
           <LogOut className="w-4 h-4" /> Sign Out
         </button>

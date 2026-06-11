@@ -9,7 +9,7 @@ interface AuthContextType {
   user: User | null;
   portalUser: PortalUser | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<PortalUser | null>;
   signOut: () => Promise<void>;
 }
 
@@ -34,8 +34,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    await signInWithEmailAndPassword(auth, email, password);
+  const signIn = async (email: string, password: string): Promise<PortalUser | null> => {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const pu = await getPortalUser(cred.user.uid);
+    setPortalUser(pu);
+    return pu;
   };
 
   const signOut = async () => {

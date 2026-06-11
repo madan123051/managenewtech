@@ -4,6 +4,13 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import type { UserRole } from '@/types';
 
+function getDashboardByRole(role: string) {
+  if (role === 'manager') return '/manager-dashboard';
+  if (role === 'worker') return '/worker-dashboard';
+  if (role === 'customer') return '/customer-dashboard';
+  return '/dashboard';
+}
+
 interface Props {
   children: React.ReactNode;
   allowedRoles?: UserRole[];
@@ -20,7 +27,7 @@ export function ProtectedRoute({ children, allowedRoles }: Props) {
         return;
       }
       if (allowedRoles && !allowedRoles.includes(portalUser.role)) {
-        router.push('/dashboard');
+        router.push(getDashboardByRole(portalUser.role));
       }
     }
   }, [user, portalUser, loading, router, allowedRoles]);
