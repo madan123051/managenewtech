@@ -45,7 +45,7 @@ export default function WorkerDashboardPage() {
         ) : (
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-orange-500 to-orange-600 rounded-xl p-5 text-white">
-              <h2 className="text-lg font-bold">Hello, {portalUser?.name}! 🔨</h2>
+              <h2 className="text-lg font-bold">Hello, {portalUser?.displayName}! 🔨</h2>
               <p className="text-orange-100 text-sm mt-1">Here are your assigned projects for today.</p>
             </div>
 

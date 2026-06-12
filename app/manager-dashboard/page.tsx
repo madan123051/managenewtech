@@ -46,7 +46,7 @@ export default function ManagerDashboardPage() {
         ) : (
           <div className="space-y-6">
             <div className="bg-gradient-to-r from-[#1a3a6b] to-blue-700 rounded-xl p-5 text-white">
-              <h2 className="text-lg font-bold">Welcome back, {portalUser?.name}! 👋</h2>
+              <h2 className="text-lg font-bold">Welcome back, {portalUser?.displayName}! 👋</h2>
               <p className="text-blue-200 text-sm mt-1">Here's an overview of your assigned projects.</p>
             </div>
 

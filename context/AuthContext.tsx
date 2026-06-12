@@ -15,10 +15,10 @@ interface AuthContextType {
 }
 
 const DEMO_USERS: Record<string, PortalUser> = {
-  admin:    { uid: 'demo-admin',    name: 'Demo Admin',    email: 'admin@demo.com',    role: 'admin',    isActive: true } as PortalUser,
-  manager:  { uid: 'demo-manager',  name: 'Demo Manager',  email: 'manager@demo.com',  role: 'manager',  isActive: true } as PortalUser,
-  worker:   { uid: 'demo-worker',   name: 'Demo Worker',   email: 'worker@demo.com',   role: 'worker',   isActive: true } as PortalUser,
-  customer: { uid: 'demo-customer', name: 'Demo Customer', email: 'customer@demo.com', role: 'customer', isActive: true } as PortalUser,
+  admin:    { uid: 'demo-admin',    displayName: 'Demo Admin',    email: 'admin@demo.com',    role: 'admin',    isActive: true, createdAt: new Date().toISOString() },
+  manager:  { uid: 'demo-manager',  displayName: 'Demo Manager',  email: 'manager@demo.com',  role: 'manager',  isActive: true, createdAt: new Date().toISOString() },
+  worker:   { uid: 'demo-worker',   displayName: 'Demo Worker',   email: 'worker@demo.com',   role: 'worker',   isActive: true, createdAt: new Date().toISOString() },
+  customer: { uid: 'demo-customer', displayName: 'Demo Customer', email: 'customer@demo.com', role: 'customer', isActive: true, createdAt: new Date().toISOString() },
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -35,7 +35,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const pu = await getPortalUser(u.uid);
         setPortalUser(pu);
       } else {
-        // Don't clear portalUser if it's a demo user
         setPortalUser(prev => (prev?.uid?.startsWith('demo-') ? prev : null));
       }
       setLoading(false);
