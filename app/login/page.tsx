@@ -6,7 +6,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Eye, EyeOff, LogIn, Zap } from 'lucide-react';
 
 function getDashboardByRole(role: string) {
   if (role === 'manager') return '/manager-dashboard';
@@ -15,15 +15,22 @@ function getDashboardByRole(role: string) {
   return '/dashboard';
 }
 
+const DEMO_ROLES = [
+  { role: 'admin' as const,    label: 'Admin',    color: 'bg-purple-600 hover:bg-purple-700',  emoji: '👑' },
+  { role: 'manager' as const,  label: 'Manager',  color: 'bg-blue-600 hover:bg-blue-700',    emoji: '🏢' },
+  { role: 'worker' as const,   label: 'Worker',   color: 'bg-green-600 hover:bg-green-700',  emoji: '🔨' },
+  { role: 'customer' as const, label: 'Customer', color: 'bg-orange-500 hover:bg-orange-600', emoji: '🏠' },
+];
+
 export default function LoginPage() {
-  const { signIn, user } = useAuth();
+  const { signIn, demoLogin, portalUser } = useAuth();
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  if (user) { router.push('/dashboard'); return null; }
+  if (portalUser) { router.push(getDashboardByRole(portalUser.role)); return null; }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,6 +45,11 @@ export default function LoginPage() {
     }
   };
 
+  const handleDemo = (role: 'admin' | 'manager' | 'worker' | 'customer') => {
+    demoLogin(role);
+    router.push(getDashboardByRole(role));
+  };
+
   return (
     <div className="min-h-screen bg-[#1a3a6b] flex items-center justify-center p-4">
       <div className="w-full max-w-md">
@@ -48,6 +60,26 @@ export default function LoginPage() {
               <h1 className="text-white text-xl font-bold">NewTech Home Solutions</h1>
               <p className="text-blue-200 text-sm">Management Portal</p>
             </div>
+          </div>
+        </div>
+
+        {/* Demo Login Buttons */}
+        <div className="bg-white/10 rounded-2xl p-5 mb-4 backdrop-blur-sm">
+          <div className="flex items-center gap-2 mb-3">
+            <Zap className="w-4 h-4 text-yellow-400" />
+            <p className="text-white text-sm font-semibold">Quick Demo — No password needed</p>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            {DEMO_ROLES.map(({ role, label, color, emoji }) => (
+              <button
+                key={role}
+                onClick={() => handleDemo(role)}
+                className={`${color} text-white text-sm font-medium py-2.5 px-3 rounded-xl transition-colors flex items-center justify-center gap-2`}
+              >
+                <span>{emoji}</span>
+                {label}
+              </button>
+            ))}
           </div>
         </div>
 

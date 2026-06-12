@@ -10,8 +10,16 @@ interface AuthContextType {
   portalUser: PortalUser | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<PortalUser | null>;
+  demoLogin: (role: 'admin' | 'manager' | 'worker' | 'customer') => void;
   signOut: () => Promise<void>;
 }
+
+const DEMO_USERS: Record<string, PortalUser> = {
+  admin:    { uid: 'demo-admin',    name: 'Demo Admin',    email: 'admin@demo.com',    role: 'admin',    isActive: true } as PortalUser,
+  manager:  { uid: 'demo-manager',  name: 'Demo Manager',  email: 'manager@demo.com',  role: 'manager',  isActive: true } as PortalUser,
+  worker:   { uid: 'demo-worker',   name: 'Demo Worker',   email: 'worker@demo.com',   role: 'worker',   isActive: true } as PortalUser,
+  customer: { uid: 'demo-customer', name: 'Demo Customer', email: 'customer@demo.com', role: 'customer', isActive: true } as PortalUser,
+};
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
@@ -27,7 +35,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const pu = await getPortalUser(u.uid);
         setPortalUser(pu);
       } else {
-        setPortalUser(null);
+        // Don't clear portalUser if it's a demo user
+        setPortalUser(prev => (prev?.uid?.startsWith('demo-') ? prev : null));
       }
       setLoading(false);
     });
@@ -41,12 +50,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return pu;
   };
 
+  const demoLogin = (role: 'admin' | 'manager' | 'worker' | 'customer') => {
+    setPortalUser(DEMO_USERS[role]);
+  };
+
   const signOut = async () => {
-    await firebaseSignOut(auth);
+    setPortalUser(null);
+    if (user) await firebaseSignOut(auth);
   };
 
   return (
-    <AuthContext.Provider value={{ user, portalUser, loading, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, portalUser, loading, signIn, demoLogin, signOut }}>
       {children}
     </AuthContext.Provider>
   );
