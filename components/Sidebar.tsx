@@ -56,7 +56,7 @@ export function Sidebar() {
 
       <div className="px-3 py-4 border-t border-white/10">
         <div className="px-3 py-2 mb-2">
-          <p className="text-xs text-blue-200 truncate">{portalUser.name}</p>
+          <p className="text-xs text-blue-200 truncate">{portalUser.displayName}</p>
           <p className="text-xs text-blue-300 capitalize">{portalUser.role}</p>
         </div>
         <button onClick={signOut} className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm text-red-300 hover:bg-red-500/20">
