@@ -17,12 +17,12 @@ interface Props {
 }
 
 export function ProtectedRoute({ children, allowedRoles }: Props) {
-  const { user, portalUser, loading } = useAuth();
+  const { portalUser, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (!loading) {
-      if (!user || !portalUser) {
+      if (!portalUser) {
         router.push('/login');
         return;
       }
@@ -30,7 +30,7 @@ export function ProtectedRoute({ children, allowedRoles }: Props) {
         router.push(getDashboardByRole(portalUser.role));
       }
     }
-  }, [user, portalUser, loading, router, allowedRoles]);
+  }, [portalUser, loading, router, allowedRoles]);
 
   if (loading) {
     return (
@@ -43,7 +43,7 @@ export function ProtectedRoute({ children, allowedRoles }: Props) {
     );
   }
 
-  if (!user || !portalUser) return null;
+  if (!portalUser) return null;
   if (allowedRoles && !allowedRoles.includes(portalUser.role)) return null;
 
   return <>{children}</>;
