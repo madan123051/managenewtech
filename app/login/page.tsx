@@ -1,8 +1,6 @@
 'use client';
 
-export const dynamic = 'force-dynamic';
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
@@ -30,7 +28,12 @@ export default function LoginPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  if (portalUser) { router.push(getDashboardByRole(portalUser.role)); return null; }
+  // Redirect if already logged in
+  useEffect(() => {
+    if (portalUser) {
+      router.push(getDashboardByRole(portalUser.role));
+    }
+  }, [portalUser, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,6 +52,8 @@ export default function LoginPage() {
     demoLogin(role);
     router.push(getDashboardByRole(role));
   };
+
+  if (portalUser) return null;
 
   return (
     <div className="min-h-screen bg-[#1a3a6b] flex items-center justify-center p-4">
