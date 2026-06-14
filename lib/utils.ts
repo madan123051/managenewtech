@@ -1,1 +1,83 @@
-export function cn(...classes: (string | undefined | null | false)[]): string {\n  return classes\n    .filter((c) => typeof c === 'string')\n    .join(' ')\n    .trim();\n}\n\nexport function formatCurrency(amount: number): string {\n  return new Intl.NumberFormat('en-IN', {\n    style: 'currency',\n    currency: 'INR',\n  }).format(amount);\n}\n\nexport function formatDate(date: string | Date): string {\n  return new Intl.DateTimeFormat('en-IN', {\n    year: 'numeric',\n    month: 'short',\n    day: 'numeric',\n  }).format(new Date(date));\n}\n\nexport function formatDateTime(date: string | Date): string {\n  return new Intl.DateTimeFormat('en-IN', {\n    year: 'numeric',\n    month: 'short',\n    day: 'numeric',\n    hour: '2-digit',\n    minute: '2-digit',\n  }).format(new Date(date));\n}\n\nexport function getInitials(name: string): string {\n  return name\n    .split(' ')\n    .map((n) => n[0])\n    .join('')\n    .toUpperCase()\n    .slice(0, 2);\n}\n\nexport function truncate(str: string, length: number = 50): string {\n  if (str.length <= length) return str;\n  return str.slice(0, length) + '...';\n}\n\nexport function getStatusColor(status: string): string {\n  const colors: Record<string, string> = {\n    'new': 'gray',\n    'contacted': 'blue',\n    'qualified': 'yellow',\n    'converted': 'green',\n    'lost': 'red',\n    'lead': 'gray',\n    'quotation': 'blue',\n    'approved': 'green',\n    'site_measurement': 'yellow',\n    'production': 'orange',\n    'installation_scheduled': 'purple',\n    'installation_in_progress': 'indigo',\n    'completed': 'teal',\n    'warranty_active': 'emerald',\n    'draft': 'gray',\n    'sent': 'blue',\n    'rejected': 'red',\n    'expired': 'red',\n  };\n  return colors[status] || 'gray';\n}\n\nexport function generateId(): string {\n  return Date.now().toString(36) + Math.random().toString(36).substr(2);\n}\n\nexport function validateEmail(email: string): boolean {\n  const re = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;\n  return re.test(email);\n}\n\nexport function validatePhone(phone: string): boolean {\n  const re = /^[0-9]{10}$/;\n  return re.test(phone.replace(/\\D/g, ''));\n}"
+export function cn(...classes: (string | undefined | null | false)[]): string {
+  return classes
+    .filter((c) => typeof c === 'string')
+    .join(' ')
+    .trim();
+}
+
+export function formatCurrency(amount: number): string {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+  }).format(amount);
+}
+
+export function formatDate(date: string | Date): string {
+  return new Intl.DateTimeFormat('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  }).format(new Date(date));
+}
+
+export function formatDateTime(date: string | Date): string {
+  return new Intl.DateTimeFormat('en-IN', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(new Date(date));
+}
+
+export function getInitials(name: string): string {
+  return name
+    .split(' ')
+    .map((n) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
+}
+
+export function truncate(str: string, length: number = 50): string {
+  if (str.length <= length) return str;
+  return str.slice(0, length) + '...';
+}
+
+export function getStatusColor(status: string): string {
+  const colors: Record<string, string> = {
+    'new': 'gray',
+    'contacted': 'blue',
+    'qualified': 'yellow',
+    'converted': 'green',
+    'lost': 'red',
+    'lead': 'gray',
+    'quotation': 'blue',
+    'approved': 'green',
+    'site_measurement': 'yellow',
+    'production': 'orange',
+    'installation_scheduled': 'purple',
+    'installation_in_progress': 'indigo',
+    'completed': 'teal',
+    'warranty_active': 'emerald',
+    'draft': 'gray',
+    'sent': 'blue',
+    'rejected': 'red',
+    'expired': 'red',
+  };
+  return colors[status] || 'gray';
+}
+
+export function generateId(): string {
+  return Date.now().toString(36) + Math.random().toString(36).substr(2);
+}
+
+export function validateEmail(email: string): boolean {
+  const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return re.test(email);
+}
+
+export function validatePhone(phone: string): boolean {
+  const re = /^[0-9]{10}$/;
+  return re.test(phone.replace(/\D/g, ''));
+}"

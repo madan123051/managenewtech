@@ -1,1 +1,137 @@
-'use client';\n\nimport { useState } from 'react';\nimport { Plus, Filter } from 'lucide-react';\nimport { DataTable, Column } from '../ui/DataTable';\nimport { Button } from '../ui/Button';\nimport { Badge } from '../ui/Badge';\nimport { PageHeader } from '../shared/PageHeader';\nimport { Card, CardContent } from '../ui/Card';\nimport { getStatusColor } from '@/lib/utils';\nimport type { Project } from '@/types';\n\ninterface ProjectListProps {\n  projects?: Project[];\n  isLoading?: boolean;\n  onEdit?: (project: Project) => void;\n  onDelete?: (project: Project) => void;\n  onCreate?: () => void;\n}\n\nexport function ProjectList({ \n  projects = [], \n  isLoading = false, \n  onEdit, \n  onDelete, \n  onCreate \n}: ProjectListProps) {\n  const [searchTerm, setSearchTerm] = useState('');\n  const [statusFilter, setStatusFilter] = useState<string | null>(null);\n\n  const filtered = projects.filter(p => {\n    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||\n                         p.customerName.toLowerCase().includes(searchTerm.toLowerCase());\n    const matchesStatus = !statusFilter || p.status === statusFilter;\n    return matchesSearch && matchesStatus;\n  });\n\n  const columns: Column<Project>[] = [\n    {\n      key: 'projectNumber',\n      header: 'Project ID',\n      width: 'w-20',\n      render: (value) => <span className=\"font-mono text-sm text-gray-700\">{value}</span>,\n    },\n    {\n      key: 'title',\n      header: 'Project Title',\n      sortable: true,\n      render: (value, row) => (\n        <div>\n          <p className=\"font-medium text-sm text-gray-900\">{value}</p>\n          <p className=\"text-xs text-gray-500 mt-0.5\">Customer: {row.customerName}</p>\n        </div>\n      ),\n    },\n    {\n      key: 'status',\n      header: 'Status',\n      render: (value) => {\n        const color = getStatusColor(value);\n        return <Badge variant={color as any}>{value?.replace(/_/g, ' ')}</Badge>;\n      },\n    },\n    {\n      key: 'assignedManagerName',\n      header: 'Manager',\n      render: (value) => <span className=\"text-sm text-gray-700\">{value || '-'}</span>,\n    },\n    {\n      key: 'totalAmount',\n      header: 'Amount',\n      render: (value) => <span className=\"font-semibold text-sm text-gray-900\">₹{(value / 100000).toFixed(1)}L</span>,\n    },\n  ];\n\n  return (\n    <div className=\"space-y-6\">\n      <PageHeader\n        title=\"Projects\"\n        description=\"Manage all your projects\"\n        actions={\n          <Button variant=\"primary\" onClick={onCreate} icon={<Plus className=\"w-4 h-4\" />}>\n            New Project\n          </Button>\n        }\n      />\n\n      <Card>\n        <CardContent className=\"pt-6 space-y-4\">\n          <div className=\"flex flex-col sm:flex-row gap-4\">\n            <input\n              type=\"text\"\n              placeholder=\"Search projects...\"\n              value={searchTerm}\n              onChange={(e) => setSearchTerm(e.target.value)}\n              className=\"flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1a3a6b] focus:ring-2 focus:ring-blue-100\"\n            />\n            <select\n              value={statusFilter || ''}\n              onChange={(e) => setStatusFilter(e.target.value || null)}\n              className=\"px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1a3a6b] focus:ring-2 focus:ring-blue-100\"\n            >\n              <option value=\"\">All Statuses</option>\n              <option value=\"lead\">Lead</option>\n              <option value=\"quotation\">Quotation</option>\n              <option value=\"approved\">Approved</option>\n              <option value=\"site_measurement\">Site Measurement</option>\n              <option value=\"production\">Production</option>\n              <option value=\"installation_scheduled\">Installation Scheduled</option>\n              <option value=\"installation_in_progress\">Installation In Progress</option>\n              <option value=\"completed\">Completed</option>\n              <option value=\"warranty_active\">Warranty Active</option>\n            </select>\n          </div>\n        </CardContent>\n      </Card>\n\n      <DataTable\n        columns={columns}\n        data={filtered}\n        isLoading={isLoading}\n        onEdit={onEdit}\n        onDelete={onDelete}\n        pageSize={15}\n        emptyState={\n          <div className=\"text-center py-12\">\n            <p className=\"text-gray-600 font-medium\">No projects found</p>\n            <Button variant=\"primary\" size=\"sm\" onClick={onCreate} className=\"mt-4\">\n              Create First Project\n            </Button>\n          </div>\n        }\n      />\n    </div>\n  );\n}\n"
+'use client';
+
+import { useState } from 'react';
+import { Plus, Filter } from 'lucide-react';
+import { DataTable, Column } from '../ui/DataTable';
+import { Button } from '../ui/Button';
+import { Badge } from '../ui/Badge';
+import { PageHeader } from '../shared/PageHeader';
+import { Card, CardContent } from '../ui/Card';
+import { getStatusColor } from '@/lib/utils';
+import type { Project } from '@/types';
+
+interface ProjectListProps {
+  projects?: Project[];
+  isLoading?: boolean;
+  onEdit?: (project: Project) => void;
+  onDelete?: (project: Project) => void;
+  onCreate?: () => void;
+}
+
+export function ProjectList({ 
+  projects = [], 
+  isLoading = false, 
+  onEdit, 
+  onDelete, 
+  onCreate 
+}: ProjectListProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+
+  const filtered = projects.filter(p => {
+    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         p.customerName.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesStatus = !statusFilter || p.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const columns: Column<Project>[] = [
+    {
+      key: 'projectNumber',
+      header: 'Project ID',
+      width: 'w-20',
+      render: (value) => <span className="font-mono text-sm text-gray-700">{value}</span>,
+    },
+    {
+      key: 'title',
+      header: 'Project Title',
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <p className="font-medium text-sm text-gray-900">{value}</p>
+          <p className="text-xs text-gray-500 mt-0.5">Customer: {row.customerName}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (value) => {
+        const color = getStatusColor(value);
+        return <Badge variant={color as any}>{value?.replace(/_/g, ' ')}</Badge>;
+      },
+    },
+    {
+      key: 'assignedManagerName',
+      header: 'Manager',
+      render: (value) => <span className="text-sm text-gray-700">{value || '-'}</span>,
+    },
+    {
+      key: 'totalAmount',
+      header: 'Amount',
+      render: (value) => <span className="font-semibold text-sm text-gray-900">₹{(value / 100000).toFixed(1)}L</span>,
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Projects"
+        description="Manage all your projects"
+        actions={
+          <Button variant="primary" onClick={onCreate} icon={<Plus className="w-4 h-4" />}>
+            New Project
+          </Button>
+        }
+      />
+
+      <Card>
+        <CardContent className="pt-6 space-y-4">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <input
+              type="text"
+              placeholder="Search projects..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1a3a6b] focus:ring-2 focus:ring-blue-100"
+            />
+            <select
+              value={statusFilter || ''}
+              onChange={(e) => setStatusFilter(e.target.value || null)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-[#1a3a6b] focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="">All Statuses</option>
+              <option value="lead">Lead</option>
+              <option value="quotation">Quotation</option>
+              <option value="approved">Approved</option>
+              <option value="site_measurement">Site Measurement</option>
+              <option value="production">Production</option>
+              <option value="installation_scheduled">Installation Scheduled</option>
+              <option value="installation_in_progress">Installation In Progress</option>
+              <option value="completed">Completed</option>
+              <option value="warranty_active">Warranty Active</option>
+            </select>
+          </div>
+        </CardContent>
+      </Card>
+
+      <DataTable
+        columns={columns}
+        data={filtered}
+        isLoading={isLoading}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        pageSize={15}
+        emptyState={
+          <div className="text-center py-12">
+            <p className="text-gray-600 font-medium">No projects found</p>
+            <Button variant="primary" size="sm" onClick={onCreate} className="mt-4">
+              Create First Project
+            </Button>
+          </div>
+        }
+      />
+    </div>
+  );
+}
+"

@@ -1,1 +1,108 @@
-'use client';\n\nimport { useState } from 'react';\nimport { Modal } from '../ui/Modal';\nimport { Input } from '../ui/Input';\nimport { Button } from '../ui/Button';\nimport { Card, CardContent } from '../ui/Card';\nimport type { Customer } from '@/types';\n\ninterface CustomerFormProps {\n  isOpen: boolean;\n  onClose: () => void;\n  onSubmit: (data: Partial<Customer>) => Promise<void> | void;\n  customer?: Customer;\n  isLoading?: boolean;\n}\n\nexport function CustomerForm({ isOpen, onClose, onSubmit, customer, isLoading = false }: CustomerFormProps) {\n  const [formData, setFormData] = useState<Partial<Customer>>(customer || {\n    name: '',\n    email: '',\n    phone: '',\n    address: '',\n    city: '',\n    notes: '',\n  });\n\n  const [errors, setErrors] = useState<Record<string, string>>({});\n\n  const validate = () => {\n    const newErrors: Record<string, string> = {};\n    if (!formData.name) newErrors.name = 'Name is required';\n    if (!formData.email) newErrors.email = 'Email is required';\n    if (!formData.phone) newErrors.phone = 'Phone is required';\n    if (!formData.address) newErrors.address = 'Address is required';\n    if (!formData.city) newErrors.city = 'City is required';\n    setErrors(newErrors);\n    return Object.keys(newErrors).length === 0;\n  };\n\n  const handleSubmit = async (e: React.FormEvent) => {\n    e.preventDefault();\n    if (!validate()) return;\n    await onSubmit(formData);\n    onClose();\n  };\n\n  return (\n    <Modal isOpen={isOpen} onClose={onClose} title={customer ? 'Edit Customer' : 'New Customer'} size=\"md\">\n      <form onSubmit={handleSubmit} className=\"space-y-4\">\n        <Input\n          label=\"Full Name\"\n          value={formData.name || ''}\n          onChange={(e) => setFormData({ ...formData, name: e.target.value })}\n          error={errors.name}\n          required\n        />\n        <Input\n          label=\"Email\"\n          type=\"email\"\n          value={formData.email || ''}\n          onChange={(e) => setFormData({ ...formData, email: e.target.value })}\n          error={errors.email}\n          required\n        />\n        <Input\n          label=\"Phone\"\n          value={formData.phone || ''}\n          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}\n          error={errors.phone}\n          required\n        />\n        <Input\n          label=\"Address\"\n          value={formData.address || ''}\n          onChange={(e) => setFormData({ ...formData, address: e.target.value })}\n          error={errors.address}\n          required\n        />\n        <Input\n          label=\"City\"\n          value={formData.city || ''}\n          onChange={(e) => setFormData({ ...formData, city: e.target.value })}\n          error={errors.city}\n          required\n        />\n        <div>\n          <label className=\"block text-sm font-medium text-gray-700 mb-2\">Notes</label>\n          <textarea\n            value={formData.notes || ''}\n            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}\n            rows={3}\n            className=\"w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:border-[#1a3a6b] focus:ring-2 focus:ring-blue-100 outline-none\"\n          />\n        </div>\n      </form>\n      <div className=\"flex gap-3 justify-end mt-6\">\n        <Button variant=\"outline\" onClick={onClose} disabled={isLoading}>\n          Cancel\n        </Button>\n        <Button variant=\"primary\" onClick={handleSubmit} isLoading={isLoading}>\n          {customer ? 'Update' : 'Create'} Customer\n        </Button>\n      </div>\n    </Modal>\n  );\n}\n"
+'use client';
+
+import { useState } from 'react';
+import { Modal } from '../ui/Modal';
+import { Input } from '../ui/Input';
+import { Button } from '../ui/Button';
+import { Card, CardContent } from '../ui/Card';
+import type { Customer } from '@/types';
+
+interface CustomerFormProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: Partial<Customer>) => Promise<void> | void;
+  customer?: Customer;
+  isLoading?: boolean;
+}
+
+export function CustomerForm({ isOpen, onClose, onSubmit, customer, isLoading = false }: CustomerFormProps) {
+  const [formData, setFormData] = useState<Partial<Customer>>(customer || {
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    city: '',
+    notes: '',
+  });
+
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.name) newErrors.name = 'Name is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.phone) newErrors.phone = 'Phone is required';
+    if (!formData.address) newErrors.address = 'Address is required';
+    if (!formData.city) newErrors.city = 'City is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validate()) return;
+    await onSubmit(formData);
+    onClose();
+  };
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={customer ? 'Edit Customer' : 'New Customer'} size="md">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Full Name"
+          value={formData.name || ''}
+          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          error={errors.name}
+          required
+        />
+        <Input
+          label="Email"
+          type="email"
+          value={formData.email || ''}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          error={errors.email}
+          required
+        />
+        <Input
+          label="Phone"
+          value={formData.phone || ''}
+          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          error={errors.phone}
+          required
+        />
+        <Input
+          label="Address"
+          value={formData.address || ''}
+          onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+          error={errors.address}
+          required
+        />
+        <Input
+          label="City"
+          value={formData.city || ''}
+          onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+          error={errors.city}
+          required
+        />
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
+          <textarea
+            value={formData.notes || ''}
+            onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+            rows={3}
+            className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:border-[#1a3a6b] focus:ring-2 focus:ring-blue-100 outline-none"
+          />
+        </div>
+      </form>
+      <div className="flex gap-3 justify-end mt-6">
+        <Button variant="outline" onClick={onClose} disabled={isLoading}>
+          Cancel
+        </Button>
+        <Button variant="primary" onClick={handleSubmit} isLoading={isLoading}>
+          {customer ? 'Update' : 'Create'} Customer
+        </Button>
+      </div>
+    </Modal>
+  );
+}
+"

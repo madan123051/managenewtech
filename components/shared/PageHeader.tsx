@@ -1,1 +1,49 @@
-'use client';\n\nimport { Button } from '../ui/Button';\nimport { cn } from '@/lib/utils';\n\ninterface PageHeaderProps {\n  title: string;\n  description?: string;\n  actions?: React.ReactNode;\n  breadcrumbs?: Array<{ label: string; href?: string }>;\n  icon?: React.ReactNode;\n}\n\nexport function PageHeader({ title, description, actions, breadcrumbs, icon }: PageHeaderProps) {\n  return (\n    <div className=\"mb-8\">\n      {/* Breadcrumbs */}\n      {breadcrumbs && (\n        <nav className=\"mb-4 flex gap-1 text-sm\">\n          {breadcrumbs.map((crumb, idx) => (\n            <span key={idx}>\n              {crumb.href ? (\n                <a href={crumb.href} className=\"text-blue-600 hover:text-blue-700\">\n                  {crumb.label}\n                </a>\n              ) : (\n                <span className=\"text-gray-600\">{crumb.label}</span>\n              )}\n              {idx < breadcrumbs.length - 1 && <span className=\"mx-1 text-gray-400\">/</span>}\n            </span>\n          ))}\n        </nav>\n      )}\n\n      {/* Header */}\n      <div className=\"flex items-start justify-between\">\n        <div className=\"flex items-start gap-4\">\n          {icon && <div className=\"text-3xl\">{icon}</div>}\n          <div>\n            <h1 className=\"text-3xl font-bold text-gray-900\">{title}</h1>\n            {description && <p className=\"text-gray-600 mt-1\">{description}</p>}\n          </div>\n        </div>\n        {actions && <div className=\"flex gap-2\">{actions}</div>}\n      </div>\n    </div>\n  );\n}\n"
+'use client';
+
+import { Button } from '../ui/Button';
+import { cn } from '@/lib/utils';
+
+interface PageHeaderProps {
+  title: string;
+  description?: string;
+  actions?: React.ReactNode;
+  breadcrumbs?: Array<{ label: string; href?: string }>;
+  icon?: React.ReactNode;
+}
+
+export function PageHeader({ title, description, actions, breadcrumbs, icon }: PageHeaderProps) {
+  return (
+    <div className="mb-8">
+      {/* Breadcrumbs */}
+      {breadcrumbs && (
+        <nav className="mb-4 flex gap-1 text-sm">
+          {breadcrumbs.map((crumb, idx) => (
+            <span key={idx}>
+              {crumb.href ? (
+                <a href={crumb.href} className="text-blue-600 hover:text-blue-700">
+                  {crumb.label}
+                </a>
+              ) : (
+                <span className="text-gray-600">{crumb.label}</span>
+              )}
+              {idx < breadcrumbs.length - 1 && <span className="mx-1 text-gray-400">/</span>}
+            </span>
+          ))}
+        </nav>
+      )}
+
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-start gap-4">
+          {icon && <div className="text-3xl">{icon}</div>}
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">{title}</h1>
+            {description && <p className="text-gray-600 mt-1">{description}</p>}
+          </div>
+        </div>
+        {actions && <div className="flex gap-2">{actions}</div>}
+      </div>
+    </div>
+  );
+}
+"

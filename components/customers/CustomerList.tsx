@@ -1,1 +1,110 @@
-'use client';\n\nimport { useState } from 'react';\nimport { Plus, Mail, Phone } from 'lucide-react';\nimport { DataTable, Column } from '../ui/DataTable';\nimport { Button } from '../ui/Button';\nimport { Input } from '../ui/Input';\nimport { PageHeader } from '../shared/PageHeader';\nimport { Card, CardContent } from '../ui/Card';\nimport type { Customer } from '@/types';\n\ninterface CustomerListProps {\n  customers?: Customer[];\n  isLoading?: boolean;\n  onEdit?: (customer: Customer) => void;\n  onDelete?: (customer: Customer) => void;\n  onCreate?: () => void;\n}\n\nexport function CustomerList({ \n  customers = [], \n  isLoading = false, \n  onEdit, \n  onDelete, \n  onCreate \n}: CustomerListProps) {\n  const [searchTerm, setSearchTerm] = useState('');\n\n  const filtered = customers.filter(c => \n    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||\n    c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||\n    c.phone.includes(searchTerm)\n  );\n\n  const columns: Column<Customer>[] = [\n    {\n      key: 'name',\n      header: 'Name',\n      sortable: true,\n      render: (value, row) => (\n        <div>\n          <p className=\"font-medium text-sm text-gray-900\">{value}</p>\n          <p className=\"text-xs text-gray-500 mt-0.5\">{row.city}</p>\n        </div>\n      ),\n    },\n    {\n      key: 'email',\n      header: 'Email',\n      render: (value) => (\n        <a href={`mailto:${value}`} className=\"text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1\">\n          <Mail className=\"w-3 h-3\" />\n          {value}\n        </a>\n      ),\n    },\n    {\n      key: 'phone',\n      header: 'Phone',\n      render: (value) => (\n        <a href={`tel:${value}`} className=\"text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1\">\n          <Phone className=\"w-3 h-3\" />\n          {value}\n        </a>\n      ),\n    },\n  ];\n\n  return (\n    <div className=\"space-y-6\">\n      <PageHeader\n        title=\"Customers\"\n        description=\"Manage your customer database\"\n        actions={\n          <Button variant=\"primary\" onClick={onCreate} icon={<Plus className=\"w-4 h-4\" />}>\n            Add Customer\n          </Button>\n        }\n      />\n\n      <Card>\n        <CardContent className=\"pt-6\">\n          <Input\n            placeholder=\"Search by name, email, or phone...\"\n            value={searchTerm}\n            onChange={(e) => setSearchTerm(e.target.value)}\n            icon={<svg className=\"w-4 h-4\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z\" /></svg>}\n          />\n        </CardContent>\n      </Card>\n\n      <DataTable\n        columns={columns}\n        data={filtered}\n        isLoading={isLoading}\n        onEdit={onEdit}\n        onDelete={onDelete}\n        emptyState={\n          <div className=\"text-center py-12\">\n            <p className=\"text-gray-600 font-medium\">No customers found</p>\n            <Button variant=\"primary\" size=\"sm\" onClick={onCreate} className=\"mt-4\">\n              Create First Customer\n            </Button>\n          </div>\n        }\n      />\n    </div>\n  );\n}\n"
+'use client';
+
+import { useState } from 'react';
+import { Plus, Mail, Phone } from 'lucide-react';
+import { DataTable, Column } from '../ui/DataTable';
+import { Button } from '../ui/Button';
+import { Input } from '../ui/Input';
+import { PageHeader } from '../shared/PageHeader';
+import { Card, CardContent } from '../ui/Card';
+import type { Customer } from '@/types';
+
+interface CustomerListProps {
+  customers?: Customer[];
+  isLoading?: boolean;
+  onEdit?: (customer: Customer) => void;
+  onDelete?: (customer: Customer) => void;
+  onCreate?: () => void;
+}
+
+export function CustomerList({ 
+  customers = [], 
+  isLoading = false, 
+  onEdit, 
+  onDelete, 
+  onCreate 
+}: CustomerListProps) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const filtered = customers.filter(c => 
+    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.phone.includes(searchTerm)
+  );
+
+  const columns: Column<Customer>[] = [
+    {
+      key: 'name',
+      header: 'Name',
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <p className="font-medium text-sm text-gray-900">{value}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{row.city}</p>
+        </div>
+      ),
+    },
+    {
+      key: 'email',
+      header: 'Email',
+      render: (value) => (
+        <a href={`mailto:${value}`} className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1">
+          <Mail className="w-3 h-3" />
+          {value}
+        </a>
+      ),
+    },
+    {
+      key: 'phone',
+      header: 'Phone',
+      render: (value) => (
+        <a href={`tel:${value}`} className="text-blue-600 hover:text-blue-700 text-sm flex items-center gap-1">
+          <Phone className="w-3 h-3" />
+          {value}
+        </a>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        title="Customers"
+        description="Manage your customer database"
+        actions={
+          <Button variant="primary" onClick={onCreate} icon={<Plus className="w-4 h-4" />}>
+            Add Customer
+          </Button>
+        }
+      />
+
+      <Card>
+        <CardContent className="pt-6">
+          <Input
+            placeholder="Search by name, email, or phone..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            icon={<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
+          />
+        </CardContent>
+      </Card>
+
+      <DataTable
+        columns={columns}
+        data={filtered}
+        isLoading={isLoading}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        emptyState={
+          <div className="text-center py-12">
+            <p className="text-gray-600 font-medium">No customers found</p>
+            <Button variant="primary" size="sm" onClick={onCreate} className="mt-4">
+              Create First Customer
+            </Button>
+          </div>
+        }
+      />
+    </div>
+  );
+}
+"
