@@ -40,4 +40,3 @@ export { QuotationList } from './quotations/QuotationList';
 
 // Worker Components
 export { WorkerList } from './workers/WorkerList';
-"
