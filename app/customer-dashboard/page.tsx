@@ -30,9 +30,10 @@ export default function CustomerDashboardPage() {
   }, [portalUser]);
 
   const stats = {
-    totalProjects: projects.length,
-    inProgress: projects.filter(p => !['completed', 'warranty_active'].includes(p.status)).length,
-    completed: projects.filter(p => ['completed', 'warranty_active'].includes(p.status)).length
+    activeProjects: projects.filter(p => !['completed', 'warranty_active'].includes(p.status)).length,
+    completedProjects: projects.filter(p => p.status === 'completed').length,
+    totalSpent: projects.reduce((sum, p) => sum + (p.totalAmount || 0), 0),
+    warranty: projects.filter(p => p.status === 'warranty_active').length,
   };
 
   return (

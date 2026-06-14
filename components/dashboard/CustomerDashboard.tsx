@@ -15,6 +15,7 @@ interface CustomerDashboardProps {
   };
   projects?: any[];
   quotations?: any[];
+  userName?: string;
 }
 
 export function CustomerDashboard({
@@ -26,6 +27,7 @@ export function CustomerDashboard({
   },
   projects = [],
   quotations = [],
+  userName,
 }: CustomerDashboardProps) {
   return (
     <div className="space-y-8">
