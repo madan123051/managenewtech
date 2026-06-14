@@ -34,7 +34,7 @@ export default function QuotationsPage() {
       <PageHeader 
         title="Quotations"
         description="Manage customer quotations and estimates"
-        action={
+        actions={
           <Link href="/quotations/new">
             <Button>
               <Plus className="w-4 h-4 mr-2" />

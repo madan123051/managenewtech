@@ -34,7 +34,7 @@ export default function ProjectsPage() {
       <PageHeader 
         title="Projects"
         description="View and manage all projects"
-        action={
+        actions={
           <Link href="/projects/new">
             <Button>
               <Plus className="w-4 h-4 mr-2" />

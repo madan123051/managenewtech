@@ -34,7 +34,7 @@ export default function WorkersPage() {
       <PageHeader 
         title="Workers"
         description="Manage your skilled workers and technicians"
-        action={
+        actions={
           <Link href="/workers/new">
             <Button>
               <Plus className="w-4 h-4 mr-2" />
