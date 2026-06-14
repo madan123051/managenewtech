@@ -147,3 +147,6 @@ export const PRODUCT_CATEGORIES: ProductCategory[] = [
   'Crystal Partition Door',
   'Security Mesh',
 ];
+
+// Worker is an alias for PortalUser with role 'worker'
+export type Worker = PortalUser;

@@ -144,3 +144,7 @@ export async function getRecentProjects(n = 5): Promise<Project[]> {
   const snap = await getDocs(query(collection(db, 'projects'), orderBy('createdAt', 'desc'), limit(n)));
   return snap.docs.map(d => ({ id: d.id, ...d.data(), createdAt: toDate(d.data().createdAt), updatedAt: toDate(d.data().updatedAt) } as Project));
 }
+
+export async function getWorkers(): Promise<PortalUser[]> {
+  return getAllUsers('worker');
+}
