@@ -31,19 +31,30 @@ export default function DashboardPage() {
         } else if (portalUser.role === 'manager') {
           const p = await getProjects({ managerId: portalUser.uid });
           setProjects(p.slice(0, 5));
-          setStats({ 
-            totalProjects: p.length, 
-            activeProjects: p.filter(x => !['completed','warranty_active'].includes(x.status)).length, 
-            completedProjects: p.filter(x => x.status === 'completed' || x.status === 'warranty_active').length 
+          setStats({
+            assignedProjects: p.length,
+            completedThisMonth: p.filter(x => x.status === 'completed').length,
+            pendingTasks: p.filter(x => !['completed', 'warranty_active'].includes(x.status)).length,
+            assignedWorkers: 0,
           });
         } else if (portalUser.role === 'worker') {
           const p = await getProjects({ workerId: portalUser.uid });
           setProjects(p.slice(0, 5));
-          setStats({ totalProjects: p.length });
+          setStats({
+            todayJobs: p.filter(x => !['completed', 'warranty_active'].includes(x.status)).length,
+            completedJobs: p.filter(x => x.status === 'completed').length,
+            totalHours: 0,
+            rating: 0,
+          });
         } else if (portalUser.role === 'customer') {
           const p = await getProjects({ customerId: portalUser.uid });
           setProjects(p.slice(0, 5));
-          setStats({ totalProjects: p.length });
+          setStats({
+            activeProjects: p.filter(x => !['completed', 'warranty_active'].includes(x.status)).length,
+            completedProjects: p.filter(x => x.status === 'completed').length,
+            totalSpent: p.reduce((sum, x) => sum + ((x as any).totalAmount || 0), 0),
+            warranty: p.filter(x => x.status === 'warranty_active').length,
+          });
         }
       } catch (error) {
         console.error('Dashboard load error:', error);
@@ -51,7 +62,7 @@ export default function DashboardPage() {
         setLoading(false);
       }
     }
-    
+
     load();
   }, [portalUser]);
 
@@ -68,13 +79,13 @@ export default function DashboardPage() {
   return (
     <MainLayout>
       {portalUser?.role === 'admin' && stats && (
-        <AdminDashboard stats={stats} projects={projects} />
+        <AdminDashboard stats={stats} recentProjects={projects} />
       )}
       {portalUser?.role === 'manager' && stats && (
-        <ManagerDashboard stats={stats} projects={projects} userName={portalUser?.displayName || 'Manager'} />
+        <ManagerDashboard stats={stats} assignedProjects={projects} userName={portalUser?.displayName || 'Manager'} />
       )}
       {portalUser?.role === 'worker' && stats && (
-        <WorkerDashboard stats={stats} projects={projects} userName={portalUser?.displayName || 'Worker'} />
+        <WorkerDashboard stats={stats} todayJobs={projects} userName={portalUser?.displayName || 'Worker'} />
       )}
       {portalUser?.role === 'customer' && stats && (
         <CustomerDashboard stats={stats} projects={projects} userName={portalUser?.displayName || 'Customer'} />

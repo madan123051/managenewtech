@@ -15,6 +15,7 @@ interface WorkerDashboardProps {
   };
   todayJobs?: any[];
   completedJobs?: any[];
+  userName?: string;
 }
 
 export function WorkerDashboard({
@@ -26,6 +27,7 @@ export function WorkerDashboard({
   },
   todayJobs = [],
   completedJobs = [],
+  userName,
 }: WorkerDashboardProps) {
   return (
     <div className="space-y-8">

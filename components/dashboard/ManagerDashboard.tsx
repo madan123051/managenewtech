@@ -15,6 +15,7 @@ interface ManagerDashboardProps {
   };
   assignedProjects?: any[];
   workers?: any[];
+  userName?: string;
 }
 
 export function ManagerDashboard({
@@ -26,6 +27,7 @@ export function ManagerDashboard({
   },
   assignedProjects = [],
   workers = [],
+  userName,
 }: ManagerDashboardProps) {
   return (
     <div className="space-y-8">
