@@ -1,17 +1,56 @@
 'use client';
-import { Layout } from '@/components/Layout';
-import { UserCheck } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
+
+import { useEffect, useState } from 'react';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { LeadList } from '@/components/leads/LeadList';
+import { Button } from '@/components/ui/Button';
+import { Spinner } from '@/components/ui/Spinner';
+import { getLeads } from '@/lib/firestore';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import type { Lead } from '@/types';
 
 export default function LeadsPage() {
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const l = await getLeads();
+        setLeads(l);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   return (
-    <Layout title="Leads" subtitle="Track potential customers" allowedRoles={['admin','manager'] as any}>
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center mb-4">
-          <UserCheck className="w-8 h-8 text-green-400" />
+    <MainLayout>
+      <PageHeader 
+        title="Leads"
+        description="Manage sales leads and prospective customers"
+        action={
+          <Link href="/leads/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Lead
+            </Button>
+          </Link>
+        }
+      />
+
+      {loading ? (
+        <div className="flex items-center justify-center h-96">
+          <Spinner />
         </div>
-        <h2 className="text-xl font-bold text-gray-700 mb-2">Leads</h2>
-        <p className="text-gray-400 text-sm">This page is coming soon. Lead tracking features will be available here.</p>
-      </div>
-    </Layout>
+      ) : (
+        <LeadList leads={leads} />
+      )}
+    </MainLayout>
   );
 }

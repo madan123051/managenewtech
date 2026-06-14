@@ -1,17 +1,56 @@
 'use client';
-import { Layout } from '@/components/Layout';
-import { FileText } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
+
+import { useEffect, useState } from 'react';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { QuotationList } from '@/components/quotations/QuotationList';
+import { Button } from '@/components/ui/Button';
+import { Spinner } from '@/components/ui/Spinner';
+import { getQuotations } from '@/lib/firestore';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import type { Quotation } from '@/types';
 
 export default function QuotationsPage() {
+  const [quotations, setQuotations] = useState<Quotation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const q = await getQuotations();
+        setQuotations(q);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   return (
-    <Layout title="Quotations" subtitle="Manage quotes and proposals" allowedRoles={['admin','manager','customer'] as any}>
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center mb-4">
-          <FileText className="w-8 h-8 text-orange-400" />
+    <MainLayout>
+      <PageHeader 
+        title="Quotations"
+        description="Manage customer quotations and estimates"
+        action={
+          <Link href="/quotations/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              New Quotation
+            </Button>
+          </Link>
+        }
+      />
+
+      {loading ? (
+        <div className="flex items-center justify-center h-96">
+          <Spinner />
         </div>
-        <h2 className="text-xl font-bold text-gray-700 mb-2">Quotations</h2>
-        <p className="text-gray-400 text-sm">This page is coming soon. Quotation management features will be available here.</p>
-      </div>
-    </Layout>
+      ) : (
+        <QuotationList quotations={quotations} />
+      )}
+    </MainLayout>
   );
 }

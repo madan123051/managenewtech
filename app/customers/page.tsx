@@ -1,17 +1,58 @@
 'use client';
-import { Layout } from '@/components/Layout';
-import { Users } from 'lucide-react';
+
+export const dynamic = 'force-dynamic';
+
+import { useEffect, useState } from 'react';
+import { MainLayout } from '@/components/layout/MainLayout';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { CustomerList } from '@/components/customers/CustomerList';
+import { Button } from '@/components/ui/Button';
+import { Spinner } from '@/components/ui/Spinner';
+import { useAuth } from '@/context/AuthContext';
+import { getCustomers } from '@/lib/firestore';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
+import type { Customer } from '@/types';
 
 export default function CustomersPage() {
+  const { portalUser } = useAuth();
+  const [customers, setCustomers] = useState<Customer[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const c = await getCustomers();
+        setCustomers(c);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   return (
-    <Layout title="Customers" subtitle="Manage your customers" allowedRoles={['admin','manager'] as any}>
-      <div className="flex flex-col items-center justify-center h-64 text-center">
-        <div className="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center mb-4">
-          <Users className="w-8 h-8 text-blue-400" />
+    <MainLayout>
+      <PageHeader 
+        title="Customers"
+        description="Manage all your customers and their information"
+        action={
+          <Link href="/customers/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Customer
+            </Button>
+          </Link>
+        }
+      />
+
+      {loading ? (
+        <div className="flex items-center justify-center h-96">
+          <Spinner />
         </div>
-        <h2 className="text-xl font-bold text-gray-700 mb-2">Customers</h2>
-        <p className="text-gray-400 text-sm">This page is coming soon. Customer management features will be available here.</p>
-      </div>
-    </Layout>
+      ) : (
+        <CustomerList customers={customers} />
+      )}
+    </MainLayout>
   );
 }
