@@ -80,4 +80,4 @@ export function validateEmail(email: string): boolean {
 export function validatePhone(phone: string): boolean {
   const re = /^[0-9]{10}$/;
   return re.test(phone.replace(/\D/g, ''));
-}"
+}

@@ -2,8 +2,8 @@ import React from 'react';
 'use client';
 
 import Link from 'next/link';
-nimport { usePathname } from 'next/navigation';
-nimport {
+import { usePathname } from 'next/navigation';
+import {
   LayoutDashboard,
   Users,
   UserCheck,
@@ -17,8 +17,8 @@ nimport {
   ChevronDown,
   Settings,
 } from 'lucide-react';
-nimport { useAuth } from '@/context/AuthContext';
-nimport { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
+import { cn } from '@/lib/utils';
 
 function getDashboardHref(role: string) {
   if (role === 'manager') return '/manager-dashboard';

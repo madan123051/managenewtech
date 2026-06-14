@@ -1,8 +1,8 @@
 import React from 'react';
 'use client';
 
-nimport { Menu, Search, Bell, Settings } from 'lucide-react';
-nimport { cn } from '@/lib/utils';
+import { Menu, Search, Bell, Settings } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface ModernHeaderProps {
   onMenuClick?: () => void;

@@ -1,9 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
-nimport { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-nimport { cn } from '@/lib/utils';
-nimport { Button } from './Button';
+import { ChevronUp, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import { Button } from './Button';
 
 export interface Column<T> {
   key: keyof T | string;
