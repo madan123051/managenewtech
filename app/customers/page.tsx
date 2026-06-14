@@ -36,7 +36,7 @@ export default function CustomersPage() {
       <PageHeader 
         title="Customers"
         description="Manage all your customers and their information"
-        action={
+        actions={
           <Link href="/customers/new">
             <Button>
               <Plus className="w-4 h-4 mr-2" />
