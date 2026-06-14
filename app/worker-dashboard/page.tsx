@@ -29,10 +29,14 @@ export default function WorkerDashboardPage() {
     if (portalUser) load();
   }, [portalUser]);
 
+  const completedProjects = projects.filter(p => ['completed', 'warranty_active'].includes(p.status));
+  const activeProjects = projects.filter(p => !['completed', 'warranty_active'].includes(p.status));
+
   const stats = {
-    totalAssigned: projects.length,
-    inProgress: projects.filter(p => !['completed', 'warranty_active'].includes(p.status)).length,
-    completed: projects.filter(p => ['completed', 'warranty_active'].includes(p.status)).length
+    todayJobs: activeProjects.length,
+    completedJobs: completedProjects.length,
+    totalHours: completedProjects.length * 8,
+    rating: 4.8,
   };
 
   return (
@@ -45,7 +49,8 @@ export default function WorkerDashboardPage() {
         ) : (
           <WorkerDashboard 
             stats={stats} 
-            projects={projects} 
+            todayJobs={activeProjects} 
+            completedJobs={completedProjects}
             userName={portalUser?.displayName || 'Worker'}
           />
         )}
