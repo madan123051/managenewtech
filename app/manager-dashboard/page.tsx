@@ -30,9 +30,10 @@ export default function ManagerDashboardPage() {
   }, [portalUser]);
 
   const stats = {
-    totalProjects: projects.length,
-    activeProjects: projects.filter(p => !['completed', 'warranty_active'].includes(p.status)).length,
-    completedProjects: projects.filter(p => ['completed', 'warranty_active'].includes(p.status)).length
+    assignedProjects: projects.length,
+    completedThisMonth: projects.filter(p => ['completed', 'warranty_active'].includes(p.status)).length,
+    pendingTasks: projects.filter(p => !['completed', 'warranty_active'].includes(p.status)).length,
+    assignedWorkers: 0,
   };
 
   return (
