@@ -34,7 +34,7 @@ export default function LeadsPage() {
       <PageHeader 
         title="Leads"
         description="Manage sales leads and prospective customers"
-        action={
+        actions={
           <Link href="/leads/new">
             <Button>
               <Plus className="w-4 h-4 mr-2" />
