@@ -17,6 +17,9 @@ interface WorkerListProps {
   onCreate?: () => void;
 }
 
+// DataTable requires T extends { id: string }; PortalUser uses `uid`, so we extend it locally
+type WorkerRow = PortalUser & { id: string };
+
 export function WorkerList({ 
   workers = [], 
   isLoading = false, 
@@ -35,7 +38,10 @@ export function WorkerList({
     return matchesSearch && matchesStatus;
   });
 
-  const columns: Column<PortalUser>[] = [
+  // Map uid -> id so DataTable's `T extends { id: string }` constraint is satisfied
+  const tableData: WorkerRow[] = filtered.map(w => ({ ...w, id: w.uid }));
+
+  const columns: Column<WorkerRow>[] = [
     {
       key: 'displayName',
       header: 'Name',
@@ -113,10 +119,10 @@ export function WorkerList({
 
       <DataTable
         columns={columns}
-        data={filtered}
+        data={tableData}
         isLoading={isLoading}
-        onEdit={onEdit}
-        onDelete={onDelete}
+        onEdit={onEdit ? (row) => onEdit(row) : undefined}
+        onDelete={onDelete ? (row) => onDelete(row) : undefined}
         pageSize={15}
         emptyState={
           <div className="text-center py-12">
