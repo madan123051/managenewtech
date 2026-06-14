@@ -1,4 +1,3 @@
-import React from 'react';
 'use client';
 
 import { Menu, Search, Bell, Settings } from 'lucide-react';
