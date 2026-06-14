@@ -46,7 +46,7 @@ export default function ManagerDashboardPage() {
         ) : (
           <ManagerDashboard 
             stats={stats} 
-            projects={projects} 
+            assignedProjects={projects} 
             userName={portalUser?.displayName || 'Manager'}
           />
         )}
