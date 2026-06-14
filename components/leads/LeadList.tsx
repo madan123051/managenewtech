@@ -141,4 +141,3 @@ export function LeadList({
     </div>
   );
 }
-"

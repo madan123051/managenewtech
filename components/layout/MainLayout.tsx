@@ -30,4 +30,3 @@ export function MainLayout({ children, title }: MainLayoutProps) {
     </div>
   );
 }
-"

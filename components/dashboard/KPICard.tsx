@@ -51,4 +51,3 @@ export function KPICard({ title, value, icon, change, color = 'blue', onClick }:
     </Card>
   );
 }
-"
