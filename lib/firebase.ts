@@ -5,14 +5,14 @@ import { getStorage } from 'firebase/storage';
 import { getDatabase } from 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+  apiKey: "AIzaSyATvwM_0B9ibtD9MniIoiNuiirnC0mb2AY",
+  authDomain: "newtechhomesolutions-b6ab6.firebaseapp.com",
+  databaseURL: "https://newtechhomesolutions-b6ab6-default-rtdb.firebaseio.com",
+  projectId: "newtechhomesolutions-b6ab6",
+  storageBucket: "newtechhomesolutions-b6ab6.firebasestorage.app",
+  messagingSenderId: "1015056454392",
+  appId: "1:1015056454392:web:09b8e2911248681807e10d",
+  measurementId: "G-KYS4GK29L5",
 };
 
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
