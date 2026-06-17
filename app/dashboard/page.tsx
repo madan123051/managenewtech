@@ -10,28 +10,35 @@ import { WorkerDashboard } from '@/components/dashboard/WorkerDashboard';
 import { CustomerDashboard } from '@/components/dashboard/CustomerDashboard';
 import { useAuth } from '@/context/AuthContext';
 import { Spinner } from '@/components/ui/Spinner';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useDashboardStats } from '@/hooks/useDashboardStats';
 import { useProjects } from '@/hooks/useProjects';
 
 export default function DashboardPage() {
   const { portalUser } = useAuth();
 
-  const { stats: adminStats, loading: statsLoading } = useDashboardStats();
+  const { stats: adminStats, loading: statsLoading } = useDashboardStats({
+    enabled: portalUser?.role === 'admin',
+  });
 
   const { projects: allProjects, loading: allProjectsLoading } = useProjects(
-    portalUser?.role === 'admin' ? {} : undefined
+    {},
+    { enabled: portalUser?.role === 'admin' }
   );
 
   const { projects: managerProjects, loading: managerLoading } = useProjects(
-    portalUser?.role === 'manager' ? { managerId: portalUser.uid } : undefined
+    portalUser?.role === 'manager' ? { managerId: portalUser.uid } : undefined,
+    { enabled: portalUser?.role === 'manager' }
   );
 
   const { projects: workerProjects, loading: workerLoading } = useProjects(
-    portalUser?.role === 'worker' ? { workerId: portalUser.uid } : undefined
+    portalUser?.role === 'worker' ? { workerId: portalUser.uid } : undefined,
+    { enabled: portalUser?.role === 'worker' }
   );
 
   const { projects: customerProjects, loading: customerLoading } = useProjects(
-    portalUser?.role === 'customer' ? { customerId: portalUser.uid } : undefined
+    portalUser?.role === 'customer' ? { customerId: portalUser.uid } : undefined,
+    { enabled: portalUser?.role === 'customer' }
   );
 
   const managerStats = useMemo(() => ({
@@ -68,16 +75,19 @@ export default function DashboardPage() {
 
   if (loading || !portalUser) {
     return (
-      <MainLayout>
+      <ProtectedRoute>
+        <MainLayout>
         <div className="flex items-center justify-center h-96">
           <Spinner />
         </div>
-      </MainLayout>
+        </MainLayout>
+      </ProtectedRoute>
     );
   }
 
   return (
-    <MainLayout>
+    <ProtectedRoute>
+      <MainLayout>
       {portalUser.role === 'admin' && adminStats && (
         <AdminDashboard stats={adminStats} recentProjects={allProjects.slice(0, 5)} />
       )}
@@ -102,6 +112,7 @@ export default function DashboardPage() {
           userName={portalUser.displayName || 'Customer'}
         />
       )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

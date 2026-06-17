@@ -14,7 +14,8 @@ export default function ManagerDashboardPage() {
   const { portalUser } = useAuth();
 
   const { projects, loading } = useProjects(
-    portalUser ? { managerId: portalUser.uid } : undefined
+    portalUser ? { managerId: portalUser.uid } : undefined,
+    { enabled: Boolean(portalUser) }
   );
 
   const stats = useMemo(

@@ -14,7 +14,8 @@ export default function CustomerDashboardPage() {
   const { portalUser } = useAuth();
 
   const { projects, loading } = useProjects(
-    portalUser ? { customerId: portalUser.uid } : undefined
+    portalUser ? { customerId: portalUser.uid } : undefined,
+    { enabled: Boolean(portalUser) }
   );
 
   const stats = useMemo(
