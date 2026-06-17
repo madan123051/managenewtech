@@ -4,7 +4,6 @@ export const dynamic = 'force-dynamic';
 
 import { useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard';
 import { WorkerDashboard } from '@/components/dashboard/WorkerDashboard';
@@ -69,44 +68,40 @@ export default function DashboardPage() {
 
   if (loading || !portalUser) {
     return (
-      <ProtectedRoute allowedRoles={['admin', 'manager', 'worker', 'customer']}>
-        <MainLayout>
-          <div className="flex items-center justify-center h-96">
-            <Spinner />
-          </div>
-        </MainLayout>
-      </ProtectedRoute>
+      <MainLayout>
+        <div className="flex items-center justify-center h-96">
+          <Spinner />
+        </div>
+      </MainLayout>
     );
   }
 
   return (
-    <ProtectedRoute allowedRoles={['admin', 'manager', 'worker', 'customer']}>
-      <MainLayout>
-        {portalUser.role === 'admin' && adminStats && (
-          <AdminDashboard stats={adminStats} recentProjects={allProjects.slice(0, 5)} />
-        )}
-        {portalUser.role === 'manager' && (
-          <ManagerDashboard
-            stats={managerStats}
-            assignedProjects={managerProjects}
-            userName={portalUser.displayName || 'Manager'}
-          />
-        )}
-        {portalUser.role === 'worker' && (
-          <WorkerDashboard
-            stats={workerStats}
-            todayJobs={workerProjects}
-            userName={portalUser.displayName || 'Worker'}
-          />
-        )}
-        {portalUser.role === 'customer' && (
-          <CustomerDashboard
-            stats={customerStats}
-            projects={customerProjects}
-            userName={portalUser.displayName || 'Customer'}
-          />
-        )}
-      </MainLayout>
-    </ProtectedRoute>
+    <MainLayout>
+      {portalUser.role === 'admin' && adminStats && (
+        <AdminDashboard stats={adminStats} recentProjects={allProjects.slice(0, 5)} />
+      )}
+      {portalUser.role === 'manager' && (
+        <ManagerDashboard
+          stats={managerStats}
+          assignedProjects={managerProjects}
+          userName={portalUser.displayName || 'Manager'}
+        />
+      )}
+      {portalUser.role === 'worker' && (
+        <WorkerDashboard
+          stats={workerStats}
+          todayJobs={workerProjects}
+          userName={portalUser.displayName || 'Worker'}
+        />
+      )}
+      {portalUser.role === 'customer' && (
+        <CustomerDashboard
+          stats={customerStats}
+          projects={customerProjects}
+          userName={portalUser.displayName || 'Customer'}
+        />
+      )}
+    </MainLayout>
   );
 }
