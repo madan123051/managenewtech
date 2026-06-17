@@ -8,14 +8,19 @@ import { CustomerList } from '@/components/customers/CustomerList';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useCustomers } from '@/hooks/useCustomers';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CustomersPage() {
-  const { customers, loading } = useCustomers();
+  const { portalUser } = useAuth();
+  const canLoad = portalUser?.role === 'admin' || portalUser?.role === 'manager';
+  const { customers, loading } = useCustomers({ enabled: canLoad });
 
   return (
-    <MainLayout>
+    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+      <MainLayout>
       <PageHeader
         title="Customers"
         description="Manage all your customers and their information"
@@ -36,6 +41,7 @@ export default function CustomersPage() {
       ) : (
         <CustomerList customers={customers} />
       )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

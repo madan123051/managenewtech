@@ -8,14 +8,18 @@ import { QuotationList } from '@/components/quotations/QuotationList';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useQuotations } from '@/hooks/useQuotations';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function QuotationsPage() {
-  const { quotations, loading } = useQuotations();
+  const { portalUser } = useAuth();
+  const { quotations, loading } = useQuotations({ enabled: Boolean(portalUser) });
 
   return (
-    <MainLayout>
+    <ProtectedRoute allowedRoles={['admin', 'manager', 'customer']}>
+      <MainLayout>
       <PageHeader
         title="Quotations"
         description="Manage customer quotations and estimates"
@@ -36,6 +40,7 @@ export default function QuotationsPage() {
       ) : (
         <QuotationList quotations={quotations} />
       )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }
