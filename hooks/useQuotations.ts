@@ -6,14 +6,26 @@ import type { Quotation } from '@/types';
 export function useQuotations() {
   const [quotations, setQuotations] = useState<Quotation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsub = subscribeToQuotations((data) => {
-      setQuotations(data);
-      setLoading(false);
-    });
+    setLoading(true);
+    setError(null);
+
+    const unsub = subscribeToQuotations(
+      (data) => {
+        setQuotations(data);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('useQuotations error:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    );
+
     return unsub;
   }, []);
 
-  return { quotations, loading };
+  return { quotations, loading, error };
 }

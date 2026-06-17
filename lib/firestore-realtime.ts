@@ -6,9 +6,14 @@ import {
   onSnapshot,
   Timestamp,
   limit,
+  CollectionReference,
+  Query,
+  QueryDocumentSnapshot,
 } from 'firebase/firestore';
 import { db } from './firebase';
 import type { PortalUser, Customer, Lead, Quotation, Project } from '@/types';
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function toDate(val: unknown): string {
   if (!val) return new Date().toISOString();
@@ -17,135 +22,200 @@ function toDate(val: unknown): string {
   return new Date().toISOString();
 }
 
-// ─── Projects ───────────────────────────────────────────────────────────────
+/**
+ * Wraps onSnapshot with an automatic fallback.
+ * If the primary query fails (e.g. missing Firestore index), it retries
+ * against the fallback query (usually the bare collection, sorted client-side).
+ */
+function safeSnapshot<T>(
+  primary: Query | CollectionReference,
+  fallback: Query | CollectionReference,
+  mapDoc: (d: QueryDocumentSnapshot) => T,
+  callback: (items: T[]) => void,
+  onError?: (err: Error) => void,
+  sortFn?: (a: T, b: T) => number
+): () => void {
+  // Keep a ref to whichever listener is currently active so we can unsub cleanly
+  let activeUnsub: () => void = () => {};
+
+  const primaryUnsub = onSnapshot(
+    primary as Query,
+    (snap) => {
+      callback(snap.docs.map(mapDoc));
+    },
+    (err) => {
+      console.error('[Firestore] Primary query failed, using fallback:', err.message);
+      // Primary failed → start fallback listener
+      activeUnsub = onSnapshot(
+        fallback as Query,
+        (snap) => {
+          let items = snap.docs.map(mapDoc);
+          if (sortFn) items = items.sort(sortFn);
+          callback(items);
+        },
+        (fallbackErr) => {
+          console.error('[Firestore] Fallback query also failed:', fallbackErr.message);
+          if (onError) onError(fallbackErr);
+        }
+      );
+    }
+  );
+
+  activeUnsub = primaryUnsub;
+  return () => activeUnsub();
+}
+
+// ─── Date sort helper ─────────────────────────────────────────────────────────
+
+function byCreatedAtDesc<T extends { createdAt?: string }>(a: T, b: T) {
+  return new Date(b.createdAt ?? 0).getTime() - new Date(a.createdAt ?? 0).getTime();
+}
+
+// ─── Projects ────────────────────────────────────────────────────────────────
+
+function mapProject(d: QueryDocumentSnapshot): Project {
+  return {
+    id: d.id,
+    ...d.data(),
+    createdAt: toDate(d.data().createdAt),
+    updatedAt: toDate(d.data().updatedAt),
+  } as Project;
+}
 
 export function subscribeToProjects(
   callback: (projects: Project[]) => void,
-  filter?: { managerId?: string; workerId?: string; customerId?: string }
+  filter?: { managerId?: string; workerId?: string; customerId?: string },
+  onError?: (err: Error) => void
 ) {
   const ref = collection(db, 'projects');
-  let q;
+
+  // Primary: filtered + ordered (may need composite index)
+  let primary: Query;
+  let fallback: Query;
+
   if (filter?.managerId) {
-    q = query(ref, where('assignedManager', '==', filter.managerId), orderBy('createdAt', 'desc'));
+    primary = query(ref, where('assignedManager', '==', filter.managerId), orderBy('createdAt', 'desc'));
+    fallback = query(ref, where('assignedManager', '==', filter.managerId));
   } else if (filter?.workerId) {
-    q = query(ref, where('assignedWorkers', 'array-contains', filter.workerId), orderBy('createdAt', 'desc'));
+    primary = query(ref, where('assignedWorkers', 'array-contains', filter.workerId), orderBy('createdAt', 'desc'));
+    fallback = query(ref, where('assignedWorkers', 'array-contains', filter.workerId));
   } else if (filter?.customerId) {
-    q = query(ref, where('customerId', '==', filter.customerId), orderBy('createdAt', 'desc'));
+    primary = query(ref, where('customerId', '==', filter.customerId), orderBy('createdAt', 'desc'));
+    fallback = query(ref, where('customerId', '==', filter.customerId));
   } else {
-    q = query(ref, orderBy('createdAt', 'desc'));
+    primary = query(ref, orderBy('createdAt', 'desc'));
+    fallback = ref;
   }
-  return onSnapshot(q, (snap) => {
-    const projects = snap.docs.map(
-      (d) =>
-        ({
-          id: d.id,
-          ...d.data(),
-          createdAt: toDate(d.data().createdAt),
-          updatedAt: toDate(d.data().updatedAt),
-        } as Project)
-    );
-    callback(projects);
-  });
+
+  return safeSnapshot(primary, fallback, mapProject, callback, onError, byCreatedAtDesc);
 }
 
 export function subscribeToRecentProjects(
   callback: (projects: Project[]) => void,
-  n = 5
+  n = 5,
+  onError?: (err: Error) => void
 ) {
-  const q = query(collection(db, 'projects'), orderBy('createdAt', 'desc'), limit(n));
-  return onSnapshot(q, (snap) => {
-    const projects = snap.docs.map(
-      (d) =>
-        ({
-          id: d.id,
-          ...d.data(),
-          createdAt: toDate(d.data().createdAt),
-          updatedAt: toDate(d.data().updatedAt),
-        } as Project)
-    );
-    callback(projects);
-  });
+  const ref = collection(db, 'projects');
+  const primary = query(ref, orderBy('createdAt', 'desc'), limit(n));
+  const fallback = ref;
+
+  return safeSnapshot(
+    primary,
+    fallback,
+    mapProject,
+    (items) => callback(items.slice(0, n)),
+    onError,
+    byCreatedAtDesc
+  );
 }
 
 // ─── Quotations ──────────────────────────────────────────────────────────────
 
-export function subscribeToQuotations(callback: (quotations: Quotation[]) => void) {
-  const q = query(collection(db, 'quotations'), orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snap) => {
-    const quotations = snap.docs.map(
-      (d) =>
-        ({
-          id: d.id,
-          ...d.data(),
-          createdAt: toDate(d.data().createdAt),
-        } as Quotation)
-    );
-    callback(quotations);
-  });
+function mapQuotation(d: QueryDocumentSnapshot): Quotation {
+  return {
+    id: d.id,
+    ...d.data(),
+    createdAt: toDate(d.data().createdAt),
+  } as Quotation;
+}
+
+export function subscribeToQuotations(
+  callback: (quotations: Quotation[]) => void,
+  onError?: (err: Error) => void
+) {
+  const ref = collection(db, 'quotations');
+  const primary = query(ref, orderBy('createdAt', 'desc'));
+  return safeSnapshot(primary, ref, mapQuotation, callback, onError, byCreatedAtDesc);
 }
 
 // ─── Customers ───────────────────────────────────────────────────────────────
 
-export function subscribeToCustomers(callback: (customers: Customer[]) => void) {
-  const q = query(collection(db, 'customers'), orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snap) => {
-    const customers = snap.docs.map(
-      (d) =>
-        ({
-          id: d.id,
-          ...d.data(),
-          createdAt: toDate(d.data().createdAt),
-        } as Customer)
-    );
-    callback(customers);
-  });
+function mapCustomer(d: QueryDocumentSnapshot): Customer {
+  return {
+    id: d.id,
+    ...d.data(),
+    createdAt: toDate(d.data().createdAt),
+  } as Customer;
+}
+
+export function subscribeToCustomers(
+  callback: (customers: Customer[]) => void,
+  onError?: (err: Error) => void
+) {
+  const ref = collection(db, 'customers');
+  const primary = query(ref, orderBy('createdAt', 'desc'));
+  return safeSnapshot(primary, ref, mapCustomer, callback, onError, byCreatedAtDesc);
 }
 
 // ─── Leads ───────────────────────────────────────────────────────────────────
 
+function mapLead(d: QueryDocumentSnapshot): Lead {
+  return {
+    id: d.id,
+    ...d.data(),
+    createdAt: toDate(d.data().createdAt),
+    updatedAt: toDate(d.data().updatedAt),
+  } as Lead;
+}
+
 export function subscribeToLeads(
   callback: (leads: Lead[]) => void,
-  managerId?: string
+  managerId?: string,
+  onError?: (err: Error) => void
 ) {
   const ref = collection(db, 'leads');
-  const q = managerId
+  const primary = managerId
     ? query(ref, where('assignedTo', '==', managerId), orderBy('createdAt', 'desc'))
     : query(ref, orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snap) => {
-    const leads = snap.docs.map(
-      (d) =>
-        ({
-          id: d.id,
-          ...d.data(),
-          createdAt: toDate(d.data().createdAt),
-          updatedAt: toDate(d.data().updatedAt),
-        } as Lead)
-    );
-    callback(leads);
-  });
+  const fallback = managerId
+    ? query(ref, where('assignedTo', '==', managerId))
+    : ref;
+
+  return safeSnapshot(primary, fallback, mapLead, callback, onError, byCreatedAtDesc);
 }
 
 // ─── Portal Users ─────────────────────────────────────────────────────────────
 
+function mapUser(d: QueryDocumentSnapshot): PortalUser {
+  return {
+    uid: d.id,
+    ...d.data(),
+    createdAt: toDate(d.data().createdAt),
+  } as PortalUser;
+}
+
 export function subscribeToUsers(
   callback: (users: PortalUser[]) => void,
-  role?: string
+  role?: string,
+  onError?: (err: Error) => void
 ) {
   const ref = collection(db, 'portalUsers');
-  const q = role
+  const primary = role
     ? query(ref, where('role', '==', role))
     : query(ref, orderBy('createdAt', 'desc'));
-  return onSnapshot(q, (snap) => {
-    const users = snap.docs.map(
-      (d) =>
-        ({
-          uid: d.id,
-          ...d.data(),
-          createdAt: toDate(d.data().createdAt),
-        } as PortalUser)
-    );
-    callback(users);
-  });
+  const fallback = role ? query(ref, where('role', '==', role)) : ref;
+
+  return safeSnapshot(primary, fallback, mapUser, callback, onError, byCreatedAtDesc);
 }
 
 // ─── Dashboard Stats (aggregated real-time) ───────────────────────────────────
@@ -180,14 +250,14 @@ export function subscribeToDashboardStats(callback: (stats: DashboardStats) => v
     const pendingProjects = projectDocs.filter(
       (p) => p.status === 'pending' || p.status === 'pending_start'
     ).length;
-    // Sum revenue from projects completed this calendar month
     const now = new Date();
     const revenueThisMonth = projectDocs
       .filter((p) => {
         if (p.status !== 'completed') return false;
-        const d = p.updatedAt instanceof Timestamp
-          ? p.updatedAt.toDate()
-          : new Date(p.updatedAt ?? 0);
+        const d =
+          p.updatedAt instanceof Timestamp
+            ? p.updatedAt.toDate()
+            : new Date(p.updatedAt ?? 0);
         return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
       })
       .reduce((sum: number, p: any) => sum + (Number(p.totalAmount) || 0), 0);
@@ -206,6 +276,7 @@ export function subscribeToDashboardStats(callback: (stats: DashboardStats) => v
     });
   }
 
+  // Dashboard stats use simple collection listeners (no orderBy = no index issues)
   const unsubCustomers = onSnapshot(collection(db, 'customers'), (snap) => {
     customerCount = snap.size;
     emit();
@@ -218,13 +289,10 @@ export function subscribeToDashboardStats(callback: (stats: DashboardStats) => v
     quotationCount = snap.size;
     emit();
   });
-  const unsubProjects = onSnapshot(
-    query(collection(db, 'projects'), orderBy('createdAt', 'desc')),
-    (snap) => {
-      projectDocs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-      emit();
-    }
-  );
+  const unsubProjects = onSnapshot(collection(db, 'projects'), (snap) => {
+    projectDocs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    emit();
+  });
   const unsubUsers = onSnapshot(collection(db, 'portalUsers'), (snap) => {
     userDocs = snap.docs.map((d) => d.data());
     emit();
