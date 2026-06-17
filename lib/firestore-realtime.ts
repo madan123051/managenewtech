@@ -154,8 +154,11 @@ export interface DashboardStats {
   totalCustomers: number;
   totalLeads: number;
   totalProjects: number;
+  totalQuotations: number;
   activeProjects: number;
   completedProjects: number;
+  pendingProjects: number;
+  revenueThisMonth: number;
   managers: number;
   workers: number;
 }
@@ -163,6 +166,7 @@ export interface DashboardStats {
 export function subscribeToDashboardStats(callback: (stats: DashboardStats) => void) {
   let customerCount = 0;
   let leadCount = 0;
+  let quotationCount = 0;
   let projectDocs: any[] = [];
   let userDocs: any[] = [];
 
@@ -173,12 +177,30 @@ export function subscribeToDashboardStats(callback: (stats: DashboardStats) => v
     const completedProjects = projectDocs.filter(
       (p) => p.status === 'completed' || p.status === 'warranty_active'
     ).length;
+    const pendingProjects = projectDocs.filter(
+      (p) => p.status === 'pending' || p.status === 'pending_start'
+    ).length;
+    // Sum revenue from projects completed this calendar month
+    const now = new Date();
+    const revenueThisMonth = projectDocs
+      .filter((p) => {
+        if (p.status !== 'completed') return false;
+        const d = p.updatedAt instanceof Timestamp
+          ? p.updatedAt.toDate()
+          : new Date(p.updatedAt ?? 0);
+        return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+      })
+      .reduce((sum: number, p: any) => sum + (Number(p.totalAmount) || 0), 0);
+
     callback({
       totalCustomers: customerCount,
       totalLeads: leadCount,
       totalProjects: projectDocs.length,
+      totalQuotations: quotationCount,
       activeProjects,
       completedProjects,
+      pendingProjects,
+      revenueThisMonth,
       managers: userDocs.filter((u) => u.role === 'manager').length,
       workers: userDocs.filter((u) => u.role === 'worker').length,
     });
@@ -192,10 +214,14 @@ export function subscribeToDashboardStats(callback: (stats: DashboardStats) => v
     leadCount = snap.size;
     emit();
   });
+  const unsubQuotations = onSnapshot(collection(db, 'quotations'), (snap) => {
+    quotationCount = snap.size;
+    emit();
+  });
   const unsubProjects = onSnapshot(
     query(collection(db, 'projects'), orderBy('createdAt', 'desc')),
     (snap) => {
-      projectDocs = snap.docs.map((d) => d.data());
+      projectDocs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
       emit();
     }
   );
@@ -207,6 +233,7 @@ export function subscribeToDashboardStats(callback: (stats: DashboardStats) => v
   return () => {
     unsubCustomers();
     unsubLeads();
+    unsubQuotations();
     unsubProjects();
     unsubUsers();
   };
