@@ -1,4 +1,4 @@
-export type UserRole = 'admin' | 'manager' | 'worker';
+export type UserRole = 'admin' | 'manager' | 'worker' | 'customer';
 
 export type ProjectStatus = 'lead' | 'quotation' | 'approved' | 'site_measurement' | 'production' | 'installation_scheduled' | 'installation_in_progress' | 'completed' | 'warranty_active';
 
