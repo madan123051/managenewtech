@@ -2,38 +2,21 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { CustomerList } from '@/components/customers/CustomerList';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { useAuth } from '@/context/AuthContext';
-import { getCustomers } from '@/lib/firestore';
+import { useCustomers } from '@/hooks/useCustomers';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import type { Customer } from '@/types';
 
 export default function CustomersPage() {
-  const { portalUser } = useAuth();
-  const [customers, setCustomers] = useState<Customer[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const c = await getCustomers();
-        setCustomers(c);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const { customers, loading } = useCustomers();
 
   return (
     <MainLayout>
-      <PageHeader 
+      <PageHeader
         title="Customers"
         description="Manage all your customers and their information"
         actions={

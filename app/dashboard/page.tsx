@@ -2,71 +2,71 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
+import { useMemo } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { AdminDashboard } from '@/components/dashboard/AdminDashboard';
 import { ManagerDashboard } from '@/components/dashboard/ManagerDashboard';
 import { WorkerDashboard } from '@/components/dashboard/WorkerDashboard';
 import { CustomerDashboard } from '@/components/dashboard/CustomerDashboard';
 import { useAuth } from '@/context/AuthContext';
-import { getDashboardStats, getRecentProjects, getProjects } from '@/lib/firestore';
 import { Spinner } from '@/components/ui/Spinner';
-import type { Project } from '@/types';
+import { useDashboardStats } from '@/hooks/useDashboardStats';
+import { useProjects } from '@/hooks/useProjects';
 
 export default function DashboardPage() {
   const { portalUser } = useAuth();
-  const [stats, setStats] = useState<any>(null);
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    async function load() {
-      try {
-        if (!portalUser) return;
+  const { stats: adminStats, loading: statsLoading } = useDashboardStats();
 
-        if (portalUser.role === 'admin') {
-          const [s, p] = await Promise.all([getDashboardStats(), getRecentProjects(5)]);
-          setStats(s);
-          setProjects(p);
-        } else if (portalUser.role === 'manager') {
-          const p = await getProjects({ managerId: portalUser.uid });
-          setProjects(p.slice(0, 5));
-          setStats({
-            assignedProjects: p.length,
-            completedThisMonth: p.filter(x => x.status === 'completed').length,
-            pendingTasks: p.filter(x => !['completed', 'warranty_active'].includes(x.status)).length,
-            assignedWorkers: 0,
-          });
-        } else if (portalUser.role === 'worker') {
-          const p = await getProjects({ workerId: portalUser.uid });
-          setProjects(p.slice(0, 5));
-          setStats({
-            todayJobs: p.filter(x => !['completed', 'warranty_active'].includes(x.status)).length,
-            completedJobs: p.filter(x => x.status === 'completed').length,
-            totalHours: 0,
-            rating: 0,
-          });
-        } else if (portalUser.role === 'customer') {
-          const p = await getProjects({ customerId: portalUser.uid });
-          setProjects(p.slice(0, 5));
-          setStats({
-            activeProjects: p.filter(x => !['completed', 'warranty_active'].includes(x.status)).length,
-            completedProjects: p.filter(x => x.status === 'completed').length,
-            totalSpent: p.reduce((sum, x) => sum + ((x as any).totalAmount || 0), 0),
-            warranty: p.filter(x => x.status === 'warranty_active').length,
-          });
-        }
-      } catch (error) {
-        console.error('Dashboard load error:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
+  const { projects: allProjects, loading: allProjectsLoading } = useProjects(
+    portalUser?.role === 'admin' ? {} : undefined
+  );
 
-    load();
-  }, [portalUser]);
+  const { projects: managerProjects, loading: managerLoading } = useProjects(
+    portalUser?.role === 'manager' ? { managerId: portalUser.uid } : undefined
+  );
 
-  if (loading) {
+  const { projects: workerProjects, loading: workerLoading } = useProjects(
+    portalUser?.role === 'worker' ? { workerId: portalUser.uid } : undefined
+  );
+
+  const { projects: customerProjects, loading: customerLoading } = useProjects(
+    portalUser?.role === 'customer' ? { customerId: portalUser.uid } : undefined
+  );
+
+  const managerStats = useMemo(() => ({
+    assignedProjects: managerProjects.length,
+    completedThisMonth: managerProjects.filter((p) =>
+      ['completed', 'warranty_active'].includes(p.status)
+    ).length,
+    pendingTasks: managerProjects.filter(
+      (p) => !['completed', 'warranty_active'].includes(p.status)
+    ).length,
+    assignedWorkers: 0,
+  }), [managerProjects]);
+
+  const workerStats = useMemo(() => ({
+    todayJobs: workerProjects.filter(
+      (p) => !['completed', 'warranty_active'].includes(p.status)
+    ).length,
+    completedJobs: workerProjects.filter((p) => p.status === 'completed').length,
+    totalHours: 0,
+    rating: 0,
+  }), [workerProjects]);
+
+  const customerStats = useMemo(() => ({
+    activeProjects: customerProjects.filter(
+      (p) => !['completed', 'warranty_active'].includes(p.status)
+    ).length,
+    completedProjects: customerProjects.filter((p) => p.status === 'completed').length,
+    totalSpent: customerProjects.reduce((sum, p) => sum + ((p as any).totalAmount || 0), 0),
+    warranty: customerProjects.filter((p) => p.status === 'warranty_active').length,
+  }), [customerProjects]);
+
+  const loading =
+    statsLoading || allProjectsLoading || managerLoading || workerLoading || customerLoading;
+
+  if (loading || !portalUser) {
     return (
       <MainLayout>
         <div className="flex items-center justify-center h-96">
@@ -78,17 +78,29 @@ export default function DashboardPage() {
 
   return (
     <MainLayout>
-      {portalUser?.role === 'admin' && stats && (
-        <AdminDashboard stats={stats} recentProjects={projects} />
+      {portalUser.role === 'admin' && adminStats && (
+        <AdminDashboard stats={adminStats} recentProjects={allProjects.slice(0, 5)} />
       )}
-      {portalUser?.role === 'manager' && stats && (
-        <ManagerDashboard stats={stats} assignedProjects={projects} userName={portalUser?.displayName || 'Manager'} />
+      {portalUser.role === 'manager' && (
+        <ManagerDashboard
+          stats={managerStats}
+          assignedProjects={managerProjects}
+          userName={portalUser.displayName || 'Manager'}
+        />
       )}
-      {portalUser?.role === 'worker' && stats && (
-        <WorkerDashboard stats={stats} todayJobs={projects} userName={portalUser?.displayName || 'Worker'} />
+      {portalUser.role === 'worker' && (
+        <WorkerDashboard
+          stats={workerStats}
+          todayJobs={workerProjects}
+          userName={portalUser.displayName || 'Worker'}
+        />
       )}
-      {portalUser?.role === 'customer' && stats && (
-        <CustomerDashboard stats={stats} projects={projects} userName={portalUser?.displayName || 'Customer'} />
+      {portalUser.role === 'customer' && (
+        <CustomerDashboard
+          stats={customerStats}
+          projects={customerProjects}
+          userName={portalUser.displayName || 'Customer'}
+        />
       )}
     </MainLayout>
   );
