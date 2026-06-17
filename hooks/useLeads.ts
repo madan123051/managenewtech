@@ -6,14 +6,18 @@ import type { Lead } from '@/types';
 export function useLeads(managerId?: string) {
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsub = subscribeToLeads((data) => {
-      setLeads(data);
-      setLoading(false);
-    }, managerId);
+    setLoading(true);
+    setError(null);
+    const unsub = subscribeToLeads(
+      (data) => { setLeads(data); setLoading(false); },
+      managerId,
+      (err) => { setError(err.message); setLoading(false); }
+    );
     return unsub;
   }, [managerId]);
 
-  return { leads, loading };
+  return { leads, loading, error };
 }

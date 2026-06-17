@@ -6,14 +6,18 @@ import type { PortalUser } from '@/types';
 export function useUsers(role?: string) {
   const [users, setUsers] = useState<PortalUser[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const unsub = subscribeToUsers((data) => {
-      setUsers(data);
-      setLoading(false);
-    }, role);
+    setLoading(true);
+    setError(null);
+    const unsub = subscribeToUsers(
+      (data) => { setUsers(data); setLoading(false); },
+      role,
+      (err) => { setError(err.message); setLoading(false); }
+    );
     return unsub;
   }, [role]);
 
-  return { users, loading };
+  return { users, loading, error };
 }
