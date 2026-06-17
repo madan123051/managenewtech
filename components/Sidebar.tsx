@@ -1,7 +1,7 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Users, UserCheck, Briefcase, FileText, Hammer, LogOut, UserCog, Building2, X } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, Briefcase, FileText, Hammer, LogOut, UserCog, Building2, X, Settings } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
 function getDashboardHref(role: string) {
@@ -22,6 +22,7 @@ const navItems = (role: string) => {
     { href: '/workers',    label: 'Workers',    icon: Hammer,          roles: ['admin','manager'] },
     { href: '/managers',   label: 'Managers',   icon: Building2,       roles: ['admin'] },
     { href: '/users',      label: 'User Mgmt',  icon: UserCog,         roles: ['admin'] },
+    { href: '/settings',   label: 'Settings',   icon: Settings,        roles: ['admin','manager','worker','customer'] },
   ];
   return all.filter(i => i.roles.includes(role));
 };
