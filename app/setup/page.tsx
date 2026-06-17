@@ -5,7 +5,7 @@ import { doc, setDoc, serverTimestamp, getDocs, collection, query, where } from 
 import { auth, db } from '@/lib/firebase';
 
 export default function SetupPage() {
-  const [name, setName] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,11 +34,9 @@ export default function SetupPage() {
     setLoading(true);
     setError('');
     try {
-      // 1. Create Firebase Auth user
       const cred = await createUserWithEmailAndPassword(auth, email, password);
-      // 2. Create Firestore portalUsers document
       await setDoc(doc(db, 'portalUsers', cred.user.uid), {
-        name,
+        displayName,
         email,
         role: 'admin',
         isActive: true,
@@ -111,8 +109,8 @@ export default function SetupPage() {
             <label className="block text-sm font-medium text-gray-700 mb-1">Naam</label>
             <input
               type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
+              value={displayName}
+              onChange={e => setDisplayName(e.target.value)}
               required
               placeholder="Jaise: Madan"
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#1a2744]"
