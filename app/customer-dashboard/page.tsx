@@ -30,7 +30,7 @@ export default function CustomerDashboardPage() {
   );
 
   return (
-    <ProtectedRoute allowedRoles={['customer']}>
+    <ProtectedRoute allowedRoles={['admin', 'manager', 'worker']}>
       <MainLayout>
         {loading ? (
           <div className="flex items-center justify-center h-96">

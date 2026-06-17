@@ -7,22 +7,33 @@ import { Layout } from '@/components/Layout';
 import { RoleBadge } from '@/components/StatusBadge';
 import { updatePortalUser } from '@/lib/firestore';
 import { useUsers } from '@/hooks/useUsers';
-import type { PortalUser, UserRole } from '@/types';
-import { Plus, Search } from 'lucide-react';
+import { auth } from '@/lib/firebase';
+import type { UserRole } from '@/types';
+import { Plus, Search, X } from 'lucide-react';
 import { format } from 'date-fns';
 import toast from 'react-hot-toast';
+
+const ROLES: { value: UserRole; label: string }[] = [
+  { value: 'admin',   label: '👑 Admin'   },
+  { value: 'manager', label: '🏢 Manager' },
+  { value: 'worker',  label: '🔨 Worker'  },
+];
+
+const defaultForm = {
+  displayName: '',
+  email: '',
+  phone: '',
+  password: '',
+  role: 'worker' as UserRole,
+};
 
 export default function UsersPage() {
   const { users, loading } = useUsers();
   const [search, setSearch] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState({
-    displayName: '',
-    email: '',
-    phone: '',
-    role: 'worker' as UserRole,
-  });
+  const [form, setForm] = useState(defaultForm);
+  const [showPwd, setShowPwd] = useState(false);
 
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
@@ -38,9 +49,28 @@ export default function UsersPage() {
     e.preventDefault();
     setSaving(true);
     try {
-      toast.error('User creation requires server-side Firebase Admin SDK. Set up an API route.');
-    } catch {
-      toast.error('Failed to create user');
+      const token = await auth.currentUser?.getIdToken();
+      if (!token) throw new Error('You are not authenticated. Please log in again.');
+
+      const res = await fetch('/api/create-user', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(form),
+      });
+
+      const data = (await res.json()) as { error?: string; uid?: string };
+      if (!res.ok) throw new Error(data.error || 'Failed to create user');
+
+      toast.success(`✅ ${form.displayName} (${form.role}) created!`);
+      setForm(defaultForm);
+      setShowForm(false);
+      // Refresh the list
+      window.location.reload();
+    } catch (err: unknown) {
+      toast.error((err as Error)?.message || 'Failed to create user');
     } finally {
       setSaving(false);
     }
@@ -57,8 +87,9 @@ export default function UsersPage() {
   }
 
   return (
-    <Layout title="User Management" subtitle="Manage all portal users" allowedRoles={['admin']}>
+    <Layout title="User Management" subtitle="Create and manage staff accounts" allowedRoles={['admin']}>
       <div className="space-y-4">
+        {/* Toolbar */}
         <div className="flex items-center gap-3">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -73,14 +104,20 @@ export default function UsersPage() {
             onClick={() => setShowForm(true)}
             className="btn-primary flex items-center gap-2"
           >
-            <Plus className="w-4 h-4" /> Invite User
+            <Plus className="w-4 h-4" /> Create User
           </button>
         </div>
 
+        {/* Create User Modal */}
         {showForm && (
           <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
             <div className="bg-white rounded-xl shadow-xl w-full max-w-sm p-6">
-              <h2 className="text-lg font-bold text-gray-900 mb-4">Invite User</h2>
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold text-gray-900">Create New User</h2>
+                <button onClick={() => setShowForm(false)} className="text-gray-400 hover:text-gray-600">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
               <form onSubmit={handleCreate} className="space-y-3">
                 <div>
                   <label className="label">Full Name *</label>
@@ -89,6 +126,7 @@ export default function UsersPage() {
                     value={form.displayName}
                     onChange={(e) => setForm({ ...form, displayName: e.target.value })}
                     className="input"
+                    placeholder="e.g. Madan Thapa"
                   />
                 </div>
                 <div>
@@ -99,7 +137,29 @@ export default function UsersPage() {
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
                     className="input"
+                    placeholder="e.g. madan@mail.com"
                   />
+                </div>
+                <div>
+                  <label className="label">Password *</label>
+                  <div className="relative">
+                    <input
+                      type={showPwd ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      value={form.password}
+                      onChange={(e) => setForm({ ...form, password: e.target.value })}
+                      className="input pr-14"
+                      placeholder="Min. 6 characters"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPwd((v) => !v)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 hover:text-gray-600"
+                    >
+                      {showPwd ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
                 </div>
                 <div>
                   <label className="label">Phone</label>
@@ -107,6 +167,7 @@ export default function UsersPage() {
                     value={form.phone}
                     onChange={(e) => setForm({ ...form, phone: e.target.value })}
                     className="input"
+                    placeholder="Optional"
                   />
                 </div>
                 <div>
@@ -117,15 +178,14 @@ export default function UsersPage() {
                     onChange={(e) => setForm({ ...form, role: e.target.value as UserRole })}
                     className="input"
                   >
-                    <option value="worker">Worker</option>
-                    <option value="manager">Manager</option>
-                    <option value="customer">Customer</option>
-                    <option value="admin">Admin</option>
+                    {ROLES.map((r) => (
+                      <option key={r.value} value={r.value}>{r.label}</option>
+                    ))}
                   </select>
                 </div>
                 <div className="flex gap-2 pt-2">
                   <button type="submit" disabled={saving} className="btn-primary flex-1">
-                    {saving ? 'Sending...' : 'Invite User'}
+                    {saving ? 'Creating...' : 'Create User'}
                   </button>
                   <button
                     type="button"
@@ -140,6 +200,7 @@ export default function UsersPage() {
           </div>
         )}
 
+        {/* Users Table */}
         <div className="card p-0 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center h-48">
@@ -177,10 +238,9 @@ export default function UsersPage() {
                           onChange={(e) => updateRole(u.uid, e.target.value as UserRole)}
                           className="text-xs border border-gray-200 rounded-lg px-2 py-1 focus:outline-none"
                         >
-                          <option value="admin">Admin</option>
-                          <option value="manager">Manager</option>
-                          <option value="worker">Worker</option>
-                          <option value="customer">Customer</option>
+                          {ROLES.map((r) => (
+                            <option key={r.value} value={r.value}>{r.label}</option>
+                          ))}
                         </select>
                       </td>
                       <td className="table-td">
