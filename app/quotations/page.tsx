@@ -2,36 +2,21 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { QuotationList } from '@/components/quotations/QuotationList';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { getQuotations } from '@/lib/firestore';
+import { useQuotations } from '@/hooks/useQuotations';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import type { Quotation } from '@/types';
 
 export default function QuotationsPage() {
-  const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const q = await getQuotations();
-        setQuotations(q);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const { quotations, loading } = useQuotations();
 
   return (
     <MainLayout>
-      <PageHeader 
+      <PageHeader
         title="Quotations"
         description="Manage customer quotations and estimates"
         actions={

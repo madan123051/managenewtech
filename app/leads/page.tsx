@@ -2,36 +2,21 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { LeadList } from '@/components/leads/LeadList';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { getLeads } from '@/lib/firestore';
+import { useLeads } from '@/hooks/useLeads';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
-import type { Lead } from '@/types';
 
 export default function LeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function load() {
-      try {
-        const l = await getLeads();
-        setLeads(l);
-      } finally {
-        setLoading(false);
-      }
-    }
-    load();
-  }, []);
+  const { leads, loading } = useLeads();
 
   return (
     <MainLayout>
-      <PageHeader 
+      <PageHeader
         title="Leads"
         description="Manage sales leads and prospective customers"
         actions={
