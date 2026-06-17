@@ -13,7 +13,6 @@ import {
   UserCog,
   Building2,
   X,
-  ChevronDown,
   Settings,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -55,6 +54,15 @@ export function ModernSidebar({ onClose, isOpen = true }: ModernSidebarProps) {
 
   const items = navItems(portalUser.role);
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + '/');
+
+  // Safe initials: handle missing or empty displayName
+  const safeName = portalUser.displayName || portalUser.email || 'User';
+  const initials = safeName
+    .split(' ')
+    .map((n: string) => n[0])
+    .join('')
+    .toUpperCase()
+    .slice(0, 2);
 
   const sidebarClasses = cn(
     'w-64 min-h-screen h-full bg-gradient-to-b from-[#1a3a6b] to-[#0f2847] flex flex-col text-white shadow-xl',
@@ -117,13 +125,10 @@ export function ModernSidebar({ onClose, isOpen = true }: ModernSidebarProps) {
           <div className="px-4 py-3 bg-white/10 rounded-lg">
             <div className="flex items-center gap-3 mb-2">
               <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center text-xs font-bold">
-                {portalUser.displayName
-                  .split(' ')
-                  .map((n: string) => n[0])
-                  .join('')}
+                {initials}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium truncate">{portalUser.displayName}</p>
+                <p className="text-xs font-medium truncate">{safeName}</p>
                 <p className="text-xs text-blue-200 capitalize">{portalUser.role}</p>
               </div>
             </div>
