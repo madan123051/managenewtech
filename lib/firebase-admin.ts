@@ -7,11 +7,13 @@ if (!admin.apps.length) {
   if (serviceAccountStr) {
     admin.initializeApp({
       credential: admin.credential.cert(JSON.parse(serviceAccountStr) as admin.ServiceAccount),
+      databaseURL: 'https://newtechhomesolutions-b6ab6-default-rtdb.firebaseio.com',
     });
   } else {
     // Fallback: use Application Default Credentials (for Google Cloud environments)
     admin.initializeApp({
       credential: admin.credential.applicationDefault(),
+      databaseURL: 'https://newtechhomesolutions-b6ab6-default-rtdb.firebaseio.com',
     });
   }
 }
