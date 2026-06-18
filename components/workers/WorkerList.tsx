@@ -31,8 +31,9 @@ export function WorkerList({
   const [statusFilter, setStatusFilter] = useState<boolean | null>(null);
 
   const filtered = workers.filter(w => {
-    const matchesSearch = w.displayName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         w.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const q = searchTerm.toLowerCase();
+    const matchesSearch = (w.displayName || '').toLowerCase().includes(q) ||
+                         (w.email || '').toLowerCase().includes(q) ||
                          (w.phone?.includes(searchTerm) || false);
     const matchesStatus = statusFilter === null || w.isActive === statusFilter;
     return matchesSearch && matchesStatus;
@@ -127,9 +128,6 @@ export function WorkerList({
         emptyState={
           <div className="text-center py-12">
             <p className="text-gray-600 font-medium">No workers found</p>
-            <Button variant="primary" size="sm" onClick={onCreate} className="mt-4">
-              Add First Worker
-            </Button>
           </div>
         }
       />

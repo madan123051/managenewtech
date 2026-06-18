@@ -2,10 +2,9 @@
 
 export const dynamic = 'force-dynamic';
 
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { LeadList } from '@/components/leads/LeadList';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useLeads } from '@/hooks/useLeads';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -41,7 +40,7 @@ export default function LeadsPage() {
           <Spinner />
         </div>
       ) : (
-        <LeadList leads={leads} />
+        <LeadList leads={leads} onCreate={() => router.push('/leads/new')} />
       )}
       </MainLayout>
     </ProtectedRoute>

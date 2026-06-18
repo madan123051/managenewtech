@@ -47,10 +47,10 @@ export default function UsersPage() {
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     return (
-      u.displayName.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      u.phone?.includes(q) ||
-      u.role.includes(q)
+      (u.displayName || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.phone || '').includes(q) ||
+      (u.role || '').includes(q)
     );
   });
 
@@ -264,7 +264,7 @@ export default function UsersPage() {
                         </span>
                       </td>
                       <td className="table-td text-gray-400">
-                        {format(new Date(u.createdAt), 'dd MMM yyyy')}
+                        {u.createdAt ? format(new Date(u.createdAt), 'dd MMM yyyy') : '–'}
                       </td>
                       <td className="table-td">
                         <button

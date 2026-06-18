@@ -2,10 +2,9 @@
 
 export const dynamic = 'force-dynamic';
 
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { CustomerList } from '@/components/customers/CustomerList';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useCustomers } from '@/hooks/useCustomers';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -39,7 +38,7 @@ export default function CustomersPage() {
           <Spinner />
         </div>
       ) : (
-        <CustomerList customers={customers} />
+        <CustomerList customers={customers} onCreate={() => router.push('/customers/new')} />
       )}
       </MainLayout>
     </ProtectedRoute>

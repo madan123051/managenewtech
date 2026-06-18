@@ -26,11 +26,12 @@ export function CustomerList({
 }: CustomerListProps) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  const filtered = customers.filter(c => 
-    c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.phone.includes(searchTerm)
-  );
+  const filtered = customers.filter(c => {
+    const q = searchTerm.toLowerCase();
+    return (c.name || '').toLowerCase().includes(q) ||
+      (c.email || '').toLowerCase().includes(q) ||
+      (c.phone || '').includes(searchTerm);
+  });
 
   const columns: Column<Customer>[] = [
     {
@@ -98,9 +99,6 @@ export function CustomerList({
         emptyState={
           <div className="text-center py-12">
             <p className="text-gray-600 font-medium">No customers found</p>
-            <Button variant="primary" size="sm" onClick={onCreate} className="mt-4">
-              Create First Customer
-            </Button>
           </div>
         }
       />

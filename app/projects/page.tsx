@@ -2,10 +2,9 @@
 
 export const dynamic = 'force-dynamic';
 
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { ProjectList } from '@/components/projects/ProjectList';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useProjects } from '@/hooks/useProjects';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -45,7 +44,7 @@ export default function ProjectsPage() {
           <Spinner />
         </div>
       ) : (
-        <ProjectList projects={projects} />
+        <ProjectList projects={projects} onCreate={() => router.push('/projects/new')} />
       )}
       </MainLayout>
     </ProtectedRoute>

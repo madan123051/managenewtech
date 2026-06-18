@@ -33,8 +33,9 @@ export function QuotationList({
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const filtered = quotations.filter(q => {
-    const matchesSearch = q.quotationNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         q.customerName.toLowerCase().includes(searchTerm.toLowerCase());
+    const term = searchTerm.toLowerCase();
+    const matchesSearch = (q.quotationNumber || '').toLowerCase().includes(term) ||
+                         (q.customerName || '').toLowerCase().includes(term);
     const matchesStatus = !statusFilter || q.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -60,7 +61,7 @@ export function QuotationList({
     {
       key: 'total',
       header: 'Amount',
-      render: (value) => <span className="font-semibold text-gray-900">₹{(value / 100000).toFixed(1)}L</span>,
+      render: (value) => <span className="font-semibold text-gray-900">₹{((Number(value) || 0) / 100000).toFixed(1)}L</span>,
     },
     {
       key: 'status',
@@ -73,7 +74,7 @@ export function QuotationList({
     {
       key: 'validUntil',
       header: 'Valid Until',
-      render: (value) => <span className="text-sm text-gray-700">{formatDate(value)}</span>,
+      render: (value) => <span className="text-sm text-gray-700">{value ? formatDate(value) : '-'}</span>,
     },
   ];
 
@@ -136,9 +137,6 @@ export function QuotationList({
                     <td colSpan={columns.length + 1} className="p-8 text-center text-gray-500">
                       <div className="py-8">
                         <p className="text-sm text-gray-600 font-medium">No quotations found</p>
-                        <Button variant="primary" size="sm" onClick={onCreate} className="mt-4">
-                          Create First Quotation
-                        </Button>
                       </div>
                     </td>
                   </tr>

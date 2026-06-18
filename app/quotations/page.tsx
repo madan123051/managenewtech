@@ -2,10 +2,9 @@
 
 export const dynamic = 'force-dynamic';
 
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { QuotationList } from '@/components/quotations/QuotationList';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useQuotations } from '@/hooks/useQuotations';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -38,7 +37,7 @@ export default function QuotationsPage() {
           <Spinner />
         </div>
       ) : (
-        <QuotationList quotations={quotations} />
+        <QuotationList quotations={quotations} onCreate={() => router.push('/quotations/new')} />
       )}
       </MainLayout>
     </ProtectedRoute>

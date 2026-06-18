@@ -2,11 +2,10 @@
 
 export const dynamic = 'force-dynamic';
 
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { WorkerList } from '@/components/workers/WorkerList';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { getWorkers } from '@/lib/firestore';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
@@ -56,7 +55,7 @@ export default function WorkersPage() {
           <Spinner />
         </div>
       ) : (
-        <WorkerList workers={workers} />
+        <WorkerList workers={workers} onCreate={() => router.push('/workers/new')} />
       )}
       </MainLayout>
     </ProtectedRoute>
