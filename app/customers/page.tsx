@@ -2,40 +2,32 @@
 
 export const dynamic = 'force-dynamic';
 
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { CustomerList } from '@/components/customers/CustomerList';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useCustomers } from '@/hooks/useCustomers';
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 
 export default function CustomersPage() {
-  const { customers, loading } = useCustomers();
+  const { portalUser } = useAuth();
+  const router = useRouter();
+  const canLoad = portalUser?.role === 'admin' || portalUser?.role === 'manager';
+  const { customers, loading } = useCustomers({ enabled: canLoad });
 
   return (
-    <MainLayout>
-      <PageHeader
-        title="Customers"
-        description="Manage all your customers and their information"
-        actions={
-          <Link href="/customers/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              Add Customer
-            </Button>
-          </Link>
-        }
-      />
+    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+      <MainLayout>
 
       {loading ? (
         <div className="flex items-center justify-center h-96">
           <Spinner />
         </div>
       ) : (
-        <CustomerList customers={customers} />
+        <CustomerList customers={customers} onCreate={() => router.push('/customers/new')} />
       )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

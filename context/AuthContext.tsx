@@ -24,8 +24,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u);
       if (u) {
-        const pu = await getPortalUser(u.uid);
-        setPortalUser(pu);
+        try {
+          const pu = await getPortalUser(u.uid);
+          setPortalUser(pu?.isActive === false ? null : pu);
+        } catch (err) {
+          console.error('[Auth] Failed to load portal user:', err);
+          setPortalUser(null);
+        }
       } else {
         setPortalUser(null);
       }
@@ -37,6 +42,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const signIn = async (email: string, password: string): Promise<PortalUser | null> => {
     const cred = await signInWithEmailAndPassword(auth, email, password);
     const pu = await getPortalUser(cred.user.uid);
+    if (!pu || pu.isActive === false) {
+      await firebaseSignOut(auth);
+      setPortalUser(null);
+      return null;
+    }
     setPortalUser(pu);
     return pu;
   };

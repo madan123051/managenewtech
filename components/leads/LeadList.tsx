@@ -31,9 +31,10 @@ export function LeadList({
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const filtered = leads.filter(l => {
-    const matchesSearch = l.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         l.customerPhone.includes(searchTerm) ||
-                         l.customerEmail.toLowerCase().includes(searchTerm.toLowerCase());
+    const q = searchTerm.toLowerCase();
+    const matchesSearch = (l.customerName || '').toLowerCase().includes(q) ||
+                         (l.customerPhone || '').includes(searchTerm) ||
+                         (l.customerEmail || '').toLowerCase().includes(q);
     const matchesStatus = !statusFilter || l.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -132,9 +133,6 @@ export function LeadList({
         emptyState={
           <div className="text-center py-12">
             <p className="text-gray-600 font-medium">No leads found</p>
-            <Button variant="primary" size="sm" onClick={onCreate} className="mt-4">
-              Create First Lead
-            </Button>
           </div>
         }
       />

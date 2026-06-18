@@ -2,40 +2,38 @@
 
 export const dynamic = 'force-dynamic';
 
+import { useRouter } from 'next/navigation';
 import { MainLayout } from '@/components/layout/MainLayout';
-import { PageHeader } from '@/components/shared/PageHeader';
 import { ProjectList } from '@/components/projects/ProjectList';
-import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useProjects } from '@/hooks/useProjects';
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 
 export default function ProjectsPage() {
-  const { projects, loading } = useProjects();
+  const { portalUser } = useAuth();
+  const router = useRouter();
+  const filter = portalUser?.role === 'manager'
+    ? { managerId: portalUser.uid }
+    : portalUser?.role === 'worker'
+      ? { workerId: portalUser.uid }
+      : portalUser?.role === 'customer'
+        ? { customerId: portalUser.uid }
+        : {};
+  const { projects, loading } = useProjects(filter, { enabled: Boolean(portalUser) });
 
   return (
-    <MainLayout>
-      <PageHeader
-        title="Projects"
-        description="View and manage all projects"
-        actions={
-          <Link href="/projects/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              New Project
-            </Button>
-          </Link>
-        }
-      />
+    <ProtectedRoute allowedRoles={['admin', 'manager', 'worker', 'customer']}>
+      <MainLayout>
 
       {loading ? (
         <div className="flex items-center justify-center h-96">
           <Spinner />
         </div>
       ) : (
-        <ProjectList projects={projects} />
+        <ProjectList projects={projects} onCreate={() => router.push('/projects/new')} />
       )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

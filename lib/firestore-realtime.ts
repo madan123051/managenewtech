@@ -233,7 +233,7 @@ export interface DashboardStats {
   workers: number;
 }
 
-export function subscribeToDashboardStats(callback: (stats: DashboardStats) => void) {
+export function subscribeToDashboardStats(callback: (stats: DashboardStats) => void, onError?: (err: Error) => void) {
   let customerCount = 0;
   let leadCount = 0;
   let quotationCount = 0;
@@ -276,27 +276,32 @@ export function subscribeToDashboardStats(callback: (stats: DashboardStats) => v
     });
   }
 
+  const handleError = (err: Error) => {
+    console.error('[Firestore] Dashboard stats listener failed:', err.message);
+    if (onError) onError(err);
+  };
+
   // Dashboard stats use simple collection listeners (no orderBy = no index issues)
   const unsubCustomers = onSnapshot(collection(db, 'customers'), (snap) => {
     customerCount = snap.size;
     emit();
-  });
+  }, handleError);
   const unsubLeads = onSnapshot(collection(db, 'leads'), (snap) => {
     leadCount = snap.size;
     emit();
-  });
+  }, handleError);
   const unsubQuotations = onSnapshot(collection(db, 'quotations'), (snap) => {
     quotationCount = snap.size;
     emit();
-  });
+  }, handleError);
   const unsubProjects = onSnapshot(collection(db, 'projects'), (snap) => {
     projectDocs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
     emit();
-  });
+  }, handleError);
   const unsubUsers = onSnapshot(collection(db, 'portalUsers'), (snap) => {
     userDocs = snap.docs.map((d) => d.data());
     emit();
-  });
+  }, handleError);
 
   return () => {
     unsubCustomers();

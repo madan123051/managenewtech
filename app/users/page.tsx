@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Layout } from '@/components/Layout';
 import { RoleBadge } from '@/components/StatusBadge';
 import { updatePortalUser } from '@/lib/firestore';
@@ -17,6 +17,7 @@ const ROLES: { value: UserRole; label: string }[] = [
   { value: 'admin',   label: '👑 Admin'   },
   { value: 'manager', label: '🏢 Manager' },
   { value: 'worker',  label: '🔨 Worker'  },
+  { value: 'customer', label: '👤 Customer' },
 ];
 
 const defaultForm = {
@@ -35,13 +36,21 @@ export default function UsersPage() {
   const [form, setForm] = useState(defaultForm);
   const [showPwd, setShowPwd] = useState(false);
 
+  useEffect(() => {
+    const createRole = new URLSearchParams(window.location.search).get('create');
+    if (createRole === 'admin' || createRole === 'manager' || createRole === 'worker' || createRole === 'customer') {
+      setForm((current) => ({ ...current, role: createRole }));
+      setShowForm(true);
+    }
+  }, []);
+
   const filtered = users.filter((u) => {
     const q = search.toLowerCase();
     return (
-      u.displayName.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
-      u.phone?.includes(q) ||
-      u.role.includes(q)
+      (u.displayName || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
+      (u.phone || '').includes(q) ||
+      (u.role || '').includes(q)
     );
   });
 
@@ -255,7 +264,7 @@ export default function UsersPage() {
                         </span>
                       </td>
                       <td className="table-td text-gray-400">
-                        {format(new Date(u.createdAt), 'dd MMM yyyy')}
+                        {u.createdAt ? format(new Date(u.createdAt), 'dd MMM yyyy') : '–'}
                       </td>
                       <td className="table-td">
                         <button

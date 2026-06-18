@@ -29,8 +29,9 @@ export function ProjectList({
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   const filtered = projects.filter(p => {
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         p.customerName.toLowerCase().includes(searchTerm.toLowerCase());
+    const q = searchTerm.toLowerCase();
+    const matchesSearch = (p.title || '').toLowerCase().includes(q) ||
+                         (p.customerName || '').toLowerCase().includes(q);
     const matchesStatus = !statusFilter || p.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -69,7 +70,7 @@ export function ProjectList({
     {
       key: 'totalAmount',
       header: 'Amount',
-      render: (value) => <span className="font-semibold text-sm text-gray-900">₹{(value / 100000).toFixed(1)}L</span>,
+      render: (value) => <span className="font-semibold text-sm text-gray-900">₹{((Number(value) || 0) / 100000).toFixed(1)}L</span>,
     },
   ];
 
@@ -125,9 +126,6 @@ export function ProjectList({
         emptyState={
           <div className="text-center py-12">
             <p className="text-gray-600 font-medium">No projects found</p>
-            <Button variant="primary" size="sm" onClick={onCreate} className="mt-4">
-              Create First Project
-            </Button>
           </div>
         }
       />
