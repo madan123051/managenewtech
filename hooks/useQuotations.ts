@@ -3,12 +3,19 @@ import { useEffect, useState } from 'react';
 import { subscribeToQuotations } from '@/lib/firestore-realtime';
 import type { Quotation } from '@/types';
 
-export function useQuotations() {
+export function useQuotations(options: { enabled?: boolean } = {}) {
+  const { enabled = true } = options;
   const [quotations, setQuotations] = useState<Quotation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
@@ -25,7 +32,7 @@ export function useQuotations() {
     );
 
     return unsub;
-  }, []);
+  }, [enabled]);
 
   return { quotations, loading, error };
 }

@@ -8,14 +8,25 @@ import { ProjectList } from '@/components/projects/ProjectList';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useProjects } from '@/hooks/useProjects';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function ProjectsPage() {
-  const { projects, loading } = useProjects();
+  const { portalUser } = useAuth();
+  const filter = portalUser?.role === 'manager'
+    ? { managerId: portalUser.uid }
+    : portalUser?.role === 'worker'
+      ? { workerId: portalUser.uid }
+      : portalUser?.role === 'customer'
+        ? { customerId: portalUser.uid }
+        : {};
+  const { projects, loading } = useProjects(filter, { enabled: Boolean(portalUser) });
 
   return (
-    <MainLayout>
+    <ProtectedRoute allowedRoles={['admin', 'manager', 'worker', 'customer']}>
+      <MainLayout>
       <PageHeader
         title="Projects"
         description="View and manage all projects"
@@ -36,6 +47,7 @@ export default function ProjectsPage() {
       ) : (
         <ProjectList projects={projects} />
       )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

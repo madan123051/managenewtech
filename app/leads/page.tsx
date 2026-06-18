@@ -8,14 +8,21 @@ import { LeadList } from '@/components/leads/LeadList';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { useLeads } from '@/hooks/useLeads';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 
 export default function LeadsPage() {
-  const { leads, loading } = useLeads();
+  const { portalUser } = useAuth();
+  const { leads, loading } = useLeads(
+    portalUser?.role === 'manager' ? portalUser.uid : undefined,
+    { enabled: portalUser?.role === 'admin' || portalUser?.role === 'manager' }
+  );
 
   return (
-    <MainLayout>
+    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+      <MainLayout>
       <PageHeader
         title="Leads"
         description="Manage sales leads and prospective customers"
@@ -36,6 +43,7 @@ export default function LeadsPage() {
       ) : (
         <LeadList leads={leads} />
       )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }

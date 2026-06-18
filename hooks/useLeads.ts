@@ -3,12 +3,20 @@ import { useEffect, useState } from 'react';
 import { subscribeToLeads } from '@/lib/firestore-realtime';
 import type { Lead } from '@/types';
 
-export function useLeads(managerId?: string) {
+export function useLeads(managerId?: string, options: { enabled?: boolean } = {}) {
+  const { enabled = true } = options;
   const [leads, setLeads] = useState<Lead[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) {
+      setLeads([]);
+      setLoading(false);
+      setError(null);
+      return;
+    }
+
     setLoading(true);
     setError(null);
     const unsub = subscribeToLeads(
@@ -17,7 +25,7 @@ export function useLeads(managerId?: string) {
       (err) => { setError(err.message); setLoading(false); }
     );
     return unsub;
-  }, [managerId]);
+  }, [enabled, managerId]);
 
   return { leads, loading, error };
 }

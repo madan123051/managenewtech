@@ -9,16 +9,22 @@ import { WorkerList } from '@/components/workers/WorkerList';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { getWorkers } from '@/lib/firestore';
+import { ProtectedRoute } from '@/components/ProtectedRoute';
+import { useAuth } from '@/context/AuthContext';
 import { Plus } from 'lucide-react';
 import Link from 'next/link';
 import type { Worker } from '@/types';
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState<Worker[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { portalUser } = useAuth();
+  const canLoad = portalUser?.role === 'admin' || portalUser?.role === 'manager';
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function load() {
+      if (!canLoad) return;
+      setLoading(true);
       try {
         const w = await getWorkers();
         setWorkers(w);
@@ -27,10 +33,11 @@ export default function WorkersPage() {
       }
     }
     load();
-  }, []);
+  }, [canLoad]);
 
   return (
-    <MainLayout>
+    <ProtectedRoute allowedRoles={['admin', 'manager']}>
+      <MainLayout>
       <PageHeader 
         title="Workers"
         description="Manage your skilled workers and technicians"
@@ -51,6 +58,7 @@ export default function WorkersPage() {
       ) : (
         <WorkerList workers={workers} />
       )}
-    </MainLayout>
+      </MainLayout>
+    </ProtectedRoute>
   );
 }
