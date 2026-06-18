@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { adminAuth, adminDb } from '@/lib/firebase-admin';
 
-const ALLOWED_ROLES = ['admin', 'manager', 'worker'] as const;
+const ALLOWED_ROLES = ['admin', 'manager', 'worker', 'customer'] as const;
 type AllowedRole = typeof ALLOWED_ROLES[number];
 
 export async function POST(req: NextRequest) {
