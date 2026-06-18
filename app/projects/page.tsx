@@ -9,11 +9,10 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useProjects } from '@/hooks/useProjects';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
-import { Plus } from 'lucide-react';
-import Link from 'next/link';
 
 export default function ProjectsPage() {
   const { portalUser } = useAuth();
+  const router = useRouter();
   const filter = portalUser?.role === 'manager'
     ? { managerId: portalUser.uid }
     : portalUser?.role === 'worker'
@@ -26,18 +25,6 @@ export default function ProjectsPage() {
   return (
     <ProtectedRoute allowedRoles={['admin', 'manager', 'worker', 'customer']}>
       <MainLayout>
-      <PageHeader
-        title="Projects"
-        description="View and manage all projects"
-        actions={
-          <Link href="/projects/new">
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              New Project
-            </Button>
-          </Link>
-        }
-      />
 
       {loading ? (
         <div className="flex items-center justify-center h-96">
