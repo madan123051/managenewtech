@@ -10,12 +10,13 @@ import { Spinner } from '@/components/ui/Spinner';
 import { getWorkers } from '@/lib/firestore';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
 import type { Worker } from '@/types';
 
 export default function WorkersPage() {
   const [workers, setWorkers] = useState<Worker[]>([]);
   const { portalUser } = useAuth();
-  const router = useRouter();
   const canLoad = portalUser?.role === 'admin' || portalUser?.role === 'manager';
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +37,18 @@ export default function WorkersPage() {
   return (
     <ProtectedRoute allowedRoles={['admin', 'manager']}>
       <MainLayout>
+      <PageHeader 
+        title="Workers"
+        description="Manage your skilled workers and technicians"
+        actions={
+          <Link href="/workers/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Worker
+            </Button>
+          </Link>
+        }
+      />
 
       {loading ? (
         <div className="flex items-center justify-center h-96">

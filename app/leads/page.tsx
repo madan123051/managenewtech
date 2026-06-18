@@ -9,10 +9,11 @@ import { Spinner } from '@/components/ui/Spinner';
 import { useLeads } from '@/hooks/useLeads';
 import { ProtectedRoute } from '@/components/ProtectedRoute';
 import { useAuth } from '@/context/AuthContext';
+import { Plus } from 'lucide-react';
+import Link from 'next/link';
 
 export default function LeadsPage() {
   const { portalUser } = useAuth();
-  const router = useRouter();
   const { leads, loading } = useLeads(
     portalUser?.role === 'manager' ? portalUser.uid : undefined,
     { enabled: portalUser?.role === 'admin' || portalUser?.role === 'manager' }
@@ -21,6 +22,18 @@ export default function LeadsPage() {
   return (
     <ProtectedRoute allowedRoles={['admin', 'manager']}>
       <MainLayout>
+      <PageHeader
+        title="Leads"
+        description="Manage sales leads and prospective customers"
+        actions={
+          <Link href="/leads/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Lead
+            </Button>
+          </Link>
+        }
+      />
 
       {loading ? (
         <div className="flex items-center justify-center h-96">
